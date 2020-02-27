@@ -9,9 +9,9 @@ let actions;
 // TODO features: pretty-print progress-info like cargo -> mafintosh/diffy
 
 function toS3ObjectKey (owner, repo, workflowRun) {
-  const isoDate = workflow_run.created_at.slice(0, 10);
+  const isoDate = workflowRun.created_at.slice(0, 10);
 
-  return `${owner}/${repo}/workflow_runs/${isoDate}/${workflow_run.id}.json`
+  return `${owner}/${repo}/workflow_runs/${isoDate}/${workflowRun.id}.json`
 }
 
 async function mkbucketp() {
