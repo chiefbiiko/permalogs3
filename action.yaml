@@ -1,0 +1,19 @@
+name: permalogs3
+description: stores github actions logs in s3
+inputs:
+  aws_region:
+    description: AWS region of your Github Actions perma-logs bucket
+    required: false
+  bucket:
+    description: Name of your perma-logs bucket
+    required: false
+  default_s3_params:
+    description: JSON document of default params for every S3 operation
+    required: false
+runs:
+  using: node12
+  main: main.js
+author: Noah Anabiik Schwarz
+branding:
+  icon: book
+  color: yellow

@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Setup for testing the permalogs3 Github Action
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      Policies:
+        - PolicyName: StoreLogsTestingPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              # TODO: narrow the allowed actions amap
+              - Sid: AllowTestingBucketFullAccess
+                Effect: Allow
+                Action: s3:*
+                Resource:
+                  - !Sub arn:aws:s3:::${Bucket}
+                  - !Sub arn:aws:s3:::${Bucket}/*
+  AccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      Status: Active
+      UserName: !Ref User
+Outputs:
+  Region:
+    Description: AWS Region of the S3 testing bucket
+    Value: !Ref AWS::Region
+  BucketName:
+    Description: Name of the S3 testing bucket
+    Value: !Ref Bucket
+  UserArn:
+    Description: IAM user with full access to our S3 testing bucket
+    Value: !GetAtt User.Arn
+  UserAccessKeyId:
+    Description: Access key id of the IAM user
+    Value: !Ref AccessKey
+  UserSecretAccessKey:
+    Description: Secret access key of the IAM user
+    Value: !GetAtt AccessKey.SecretAccessKey
