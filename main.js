@@ -2,7 +2,7 @@ const { getInput, setFailed } = require("@actions/core");
 const { createActionAuth } = require("@octokit/auth");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
-const { join: pathJoin } = require("path");
+const { mergeDocs, toS3ObjectKey } = require("./util.js")
 const debug = require("debug")("permalogs3")
 
 let s3;
@@ -35,30 +35,6 @@ async function getWorkflow(owner, repo, workflow_id) {
   workflowCache.set(cacheKey, _workflow);
 
   return _workflow;
-}
-
-function mergeDocs(docs) {
-  return docs.reduce((acc, cur) => Object.assign(acc, cur), {});
-}
-
-function toS3ObjectKey(owner, repo, workflow, workflowRun) {
-  const date = workflowRun.created_at.slice(0, 10);
-
-  const workflowRunMetaData = [
-    workflowRun.head_branch,
-    workflowRun.head_sha,
-    workflowRun.event,
-    workflowRun.id
-  ].join("_");
-
-  return pathJoin(
-    owner,
-    repo,
-    "workflows",
-    workflow.name,
-    date,
-    `${workflowRunMetaData}.json`
-  );
 }
 
 async function mkbcktp() {
@@ -195,7 +171,8 @@ async function main() {
 
     await batchStore(pending);
   } catch (err) {
-    console.error(err.stack);
+    debug("crash", err.stack);
+    
     setFailed(`[permalogs3 crash] ${err.message}`);
   }
 }

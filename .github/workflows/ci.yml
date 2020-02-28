@@ -23,33 +23,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: empty the testing bucket
+        run: aws s3 rm s3://${{ env.BUCKET }} --recursive
       - name: audit dependencies
         run: npm audit
       - name: install dependencies
         run: npm ci
-      - name: empty the testing bucket
-        run: aws s3 rm s3://${{ env.BUCKET }} --recursive
-      - name: testing bucket count before the permalogs3 action
-        id: before
-        run: |
-          count=$( \
-            aws s3 ls --summarize --human-readable --recursive s3://${{ env.BUCKET }} | \
-            grep "Total Objects" | grep -oP "\d" \
-          )
-          echo ::set-output name=count::$count
       - name: running the permalogs3 action
-        # TODO: figure out y main fails when not setting this env var here!?
-        run: GITHUB_REPOSITORY=chiefbiiko/poly1305 node ./main.js
-      - name: testing bucket count after the permalogs3 action
-        id: after
-        run: |
-          count=$( \
-            aws s3 ls --summarize --human-readable --recursive s3://${{ env.BUCKET }} | \
-            grep "Total Objects" | grep -oP "\d" \
-          )
-          echo ::set-output name=count::$count
-      - name: compare before and after testing bucket counts
-        run: |
-          before_count=${{ steps.before.outputs.count }}
-          after_count=${{ steps.after.outputs.count }}
-          if [[ ! $after_count -gt $before_count ]]; then exit 1; fi
+        run: npm test
