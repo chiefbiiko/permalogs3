@@ -7,10 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GITHUB_REPOSITORY: chiefbiiko/poly1305
-      AWS_REGION: us-east-1
       BUCKET: permalogs3-testing-bucket
-      EXTRA_S3_OPTS: '{"accessKeyId":"a","secretAccessKey":"z","endpoint":"http://localhost:4572","s3ForcePathStyle":true}'
+      EXTRA_S3_OPTS: '{"endpoint":"http://localhost:4572"}'
     services:
       localstack:
         image: localstack/localstack:0.10.7
@@ -23,6 +21,11 @@ jobs:
       - uses: actions/setup-node@v1.1.2
         with:
           node-version: 12.x
+      - uses: aws-actions/configure-aws-credentials@v1.1.2
+        with:
+          aws-access-key-id: alibaba
+          aws-secret-access-key: sesameopen
+          aws-region: us-east-1
       - run: aws s3 --endpoint-url=http://localhost:4572 mb s3://${{ env.BUCKET }}
       - run: npm audit
       - run: npm ci
