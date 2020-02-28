@@ -48,7 +48,7 @@ async function mkbcktp() {
 async function listStoredWorkflowRunIds() {
   const { Contents: contents } = await s3.listObjectsV2().promise();
 
-  return contents.map(({ Key: key }) => key.split("/").pop());
+  return contents.map(({ Key: key }) => key.split("/").pop().split("_").pop());
 }
 
 async function listWorkflowRuns(owner, repo, skip) {
