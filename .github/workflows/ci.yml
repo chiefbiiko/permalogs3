@@ -9,7 +9,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AWS_REGION: us-east-1
       BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
-      GITHUB_REPOSITORY: chiefbiiko/poly1305
       DEBUG: permalogs3
     steps:
       - uses: actions/checkout@v2.0.0
@@ -31,7 +30,7 @@ jobs:
             grep "Total Objects" | grep -oP "\d" \
           )
           echo ::set-output name=count::$count
-      - run: node ./main.js
+      - run: GITHUB_REPOSITORY=chiefbiiko/poly1305 node ./main.js
       - id: after
         run: |
           count=$( \
