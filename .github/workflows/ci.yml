@@ -7,26 +7,19 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      BUCKET: permalogs3-testing-bucket
-      EXTRA_S3_OPTS: '{"endpoint":"http://localhost:4572"}'
-    services:
-      localstack:
-        image: localstack/localstack:0.10.7
-        ports:
-          - "4572:4572"
-        env:
-          SERVICES: s3
+      AWS_REGION: us-east-1
+      BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
     steps:
       - uses: actions/checkout@v2.0.0
       - uses: actions/setup-node@v1.1.2
         with:
           node-version: 12.x
-      - run: |
-          aws --profile=default configure set aws_access_key_id abc
-          aws --profile=default configure set aws_secret_access_key xyz
-          aws --profile=default configure set aws_region us-east-1
-      - run: aws s3 --endpoint-url=http://localhost:4572 mb s3://${{ env.BUCKET }}
-      - run: sleep 10
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
       - run: npm audit
       - run: npm ci
       - run: npm test
