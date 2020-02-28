@@ -8,6 +8,7 @@ const exec = util.promisify(require("child_process").exec);
 const S3_ENDPOINT = "http://localhost:4572";
 
 const ENV = {
+  ...process.env,
   GITHUB_REPOSITORY: "chiefbiiko/poly1305",
   AWS_REGION: "us-east-1",
   BUCKET: `permalogs3-testing-bucket-${new Date().getTime()}`,
