@@ -8,37 +8,48 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AWS_REGION: us-east-1
+      GITHUB_REPOSITORY: $GITHUB_REPOSITORY
       BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
       DEBUG: permalogs3
     steps:
-      - uses: actions/checkout@v2.0.0
-      - uses: actions/setup-node@v1.1.2
+      - name: checkout the repo
+        uses: actions/checkout@v2.0.0
+      - name: install node n npm
+        uses: actions/setup-node@v1.1.2
         with:
           node-version: 12.x
-      - name: configure aws credentials
+      - name: configure testing aws credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: npm audit
-      - run: npm ci
-      - id: before
+      - name: audit dependencies
+        run: npm audit
+      - name: install dependencies
+        run: npm ci
+      - name: empty the testing bucket
+        run: aws s3 rm s3://${{ env.BUCKET }} --recursive
+      - name: testing bucket count before the permalogs3 action
+        id: before
         run: |
           count=$( \
             aws s3 ls --summarize --human-readable --recursive s3://${{ env.BUCKET }} | \
             grep "Total Objects" | grep -oP "\d" \
           )
           echo ::set-output name=count::$count
-      - run: GITHUB_REPOSITORY=chiefbiiko/poly1305 node ./main.js
-      - id: after
+      - name: running the permalogs3 action
+        run: node ./main.js
+      - name: testing bucket count after the permalogs3 action
+        id: after
         run: |
           count=$( \
             aws s3 ls --summarize --human-readable --recursive s3://${{ env.BUCKET }} | \
             grep "Total Objects" | grep -oP "\d" \
           )
           echo ::set-output name=count::$count
-      - run: |
+      - name: compare before and after testing bucket counts
+        run: |
           before_count=${{ steps.before.outputs.count }}
           after_count=${{ steps.after.outputs.count }}
           if [[ ! $after_count -gt $before_count ]]; then exit 1; fi
