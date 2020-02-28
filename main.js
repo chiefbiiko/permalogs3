@@ -3,6 +3,7 @@ const { createActionAuth } = require("@octokit/auth");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
 const { join: pathJoin } = require("path");
+const debug = require("debug")("permalogs3")
 
 let s3;
 let actions;
@@ -137,6 +138,8 @@ async function batchStore(pending) {
 async function main() {
   try {
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+ 
+    debug("owner, repo", owner, repo);
 
     const params = {
       region: getInput("aws_region") || process.env.AWS_REGION,
@@ -148,6 +151,8 @@ async function main() {
         getInput("extra_s3_params") || process.env.EXTRA_S3_PARAMS || "null"
       )
     };
+    
+    debug("params", params);
 
     if (!owner || !repo) {
       throw new Error(
@@ -180,7 +185,11 @@ async function main() {
 
     const skip = await listStoredWorkflowRunIds();
 
+    debug("skip", skip);
+
     const pending = await listWorkflowRuns(owner, repo, skip);
+
+    debug("pending", pending);
 
     await batchStore(pending);
   } catch (err) {
