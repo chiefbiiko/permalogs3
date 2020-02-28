@@ -7,8 +7,11 @@ inputs:
   bucket:
     description: Name of your perma-logs bucket
     required: false
-  default_s3_params:
-    description: JSON document of default params for every S3 operation
+  extra_s3_opts:
+    description: JSON document of extra instantiation options for the S3 client
+    required: false
+  extra_s3_params:
+    description: JSON document of extra params for every S3 operation
     required: false
 runs:
   using: node12

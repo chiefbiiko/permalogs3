@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  localstack:
+    image: localstack/localstack:0.10.7
+    ports:
+      - "4572:4572"
+    environment:
+      - SERVICES=s3

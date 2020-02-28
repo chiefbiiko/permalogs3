@@ -2,19 +2,63 @@ const { getInput, setFailed } = require("@actions/core");
 const { createActionAuth, createTokenAuth } = require("@octokit/auth");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
+const { join: pathJoin } = require("path");
 
 let s3;
 let actions;
 
 // TODO features: pretty-print progress-info like cargo -> mafintosh/diffy
 
-function toS3ObjectKey (owner, repo, workflowRun) {
-  const isoDate = workflowRun.created_at.slice(0, 10);
+const workflowCache = new Map();
 
-  return `${owner}/${repo}/workflow_runs/${isoDate}/${workflowRun.id}.json`
+async function getWorkflow(owner, repo, workflow_id) {
+  const cacheKey = `${owner}${repo}${workflow_id}`;
+
+  if (workflowCache.has(cacheKey)) {
+    return workflowCache.get(cacheKey);
+  }
+
+  const { data: workflow } = await actions
+    .getWorkflow({ owner, repo, workflow_id });
+
+  const _workflow = {
+    ...workflow,
+    node_id: undefined,
+    url: undefined,
+    html_url: undefined,
+    badge_url: undefined
+  };
+
+  workflowCache.set(cacheKey, _workflow);
+
+  return _workflow;
 }
 
-async function mkbucketp() {
+function mergeDocs(docs) {
+  return docs.reduce((acc, cur) => Object.assign(acc, cur), {});
+}
+
+function toS3ObjectKey(owner, repo, workflow, workflowRun) {
+  const date = workflowRun.created_at.slice(0, 10);
+
+  const workflowRunMetaData = [
+    workflowRun.head_branch,
+    workflowRun.head_sha,
+    workflowRun.event,
+    workflowRun.id
+  ].join("_");
+
+  return pathJoin(
+    owner,
+    repo,
+    "workflows",
+    workflow.name,
+    date,
+    `${workflowRunMetaData}.json`
+  );
+}
+
+async function mkbcktp() {
   try {
     await s3.headBucket().promise();
   } catch (_) {
@@ -28,7 +72,7 @@ async function listStoredWorkflowRunIds() {
   return contents.map(({ Key: key }) => key.split("/").pop());
 }
 
-async function listWorkflowRuns({ owner, repo }, skip) {
+async function listWorkflowRuns(owner, repo, skip) {
   const { data: { workflow_runs } } = await actions
     .listRepoWorkflowRuns({ owner, repo });
 
@@ -36,11 +80,14 @@ async function listWorkflowRuns({ owner, repo }, skip) {
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
       .map(async workflow_run => {
-        console.error(`>>> workflow_run\n${JSON.stringify(workflow_run, null, 2)}`)
+        const workflow_id = workflow_run.workflow_url.split("/").pop();
+
+        const workflow = await getWorkflow(owner, repo, workflow_id);
+
         const { data: { jobs } } = await actions
           .listJobsForWorkflowRun({ owner, repo, run_id: workflow_run.id });
 
-        const workflowJobLogs = await Promise.all(
+        const workflowRunJobLogs = await Promise.all(
           jobs.map(async job => {
             const { data: jobLogs } = await actions
               .listWorkflowJobLogs({ owner, repo, job_id: job.id });
@@ -59,7 +106,7 @@ async function listWorkflowRuns({ owner, repo }, skip) {
         );
 
         return {
-          s3ObjectKey: toS3ObjectKey(owner, repo, workflowRun),
+          s3ObjectKey: toS3ObjectKey(owner, repo, workflow, workflow_run),
           id: workflow_run.id,
           head_branch: workflow_run.head_branch,
           head_sha: workflow_run.head_sha,
@@ -69,10 +116,8 @@ async function listWorkflowRuns({ owner, repo }, skip) {
           status: workflow_run.status,
           conclusion: workflow_run.conclusion,
           pull_requests: workflow_run.pull_requests,
-          jobs: workflowJobLogs.reduce(
-            (acc, cur) => Object.assign(acc, cur),
-            {}
-          )
+          workflow,
+          jobs: mergeDocs(workflowRunJobLogs)
         };
       })
   );
@@ -91,39 +136,54 @@ async function batchStore(pending) {
 
 async function main() {
   try {
+    const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
     const params = {
-      region: getInput("aws_region") || process.env.AWS_REGION ||
-        process.env.AWS_DEFAULT_REGION,
+      region: getInput("aws_region") || process.env.AWS_REGION,
       bucket: getInput("bucket") || process.env.BUCKET,
-      default_s3_params: JSON.parse(getInput("default_s3_params") || "{}"),
-      owner: process.env.TODO || "chiefbiiko",
-      repo: process.env.TODO || "poly1305"
+      extraS3Opts: JSON.parse(getInput("extra_s3_opts") || "null") ||
+        process.env.EXTRA_S3_OPTS,
+      extraS3Params: JSON.parse(getInput("extra_s3_params") || "null") ||
+        process.env.EXTRA_S3_PARAMS
     };
+
+    if (!owner || !repo) {
+      throw new Error(
+        "unset env var GITHUB_REPOSITORY - must read owner/repo"
+      );
+    }
+
+    if (!params.region || !params.bucket) {
+      throw new Error(
+        "undefined params - either pass inputs aws_region and bucket or set " +
+          "the corresponding env vars AWS_REGION and BUCKET"
+      );
+    }
 
     // NOTE: aws credentials must be set in ~/.aws/credentials or env vars
     s3 = new S3(
       {
+        ...params.extraS3Opts,
         apiVersion: "2006-03-01",
         region: params.region,
-        params: { ...params.default_s3_params, Bucket: params.bucket }
+        params: { ...params.extraS3Params, Bucket: params.bucket }
       }
     );
 
-    // TODO: use createActionAuth()
-    const auth = await createTokenAuth(process.env.PERSONAL_ACCESS_TOKEN);
+    const auth = await createActionAuth();
     const { token } = await auth();
     actions = new Octokit({ auth: token }).actions;
 
-    await mkbucketp();
+    await mkbcktp();
 
     const skip = await listStoredWorkflowRunIds();
 
-    const pending = await listWorkflowRuns(params, skip);
+    const pending = await listWorkflowRuns(owner, repo, skip);
 
     await batchStore(pending);
   } catch (err) {
     console.error(err.stack);
-    setFailed((err && err.message) || "permalogs3 failed");
+    setFailed(`[permalogs3 crash] ${err.message}`);
   }
 }
 
