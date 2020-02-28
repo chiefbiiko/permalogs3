@@ -24,5 +24,5 @@ jobs:
           GITHUB_REPOSITORY: chiefbiiko/poly1305
           AWS_REGION: us-east-1
           BUCKET: permalogs3-testing-bucket
-          EXTRA_S3_OPTS: '{"accessKeyId":"abc","secretAccessKey":"xyz","endpoint":"http://127.0.0.1:4572","s3ForcePathStyle":true}'
+          EXTRA_S3_OPTS: '{"credentials":{"accessKeyId":"abc","secretAccessKey":"xyz"},"endpoint":"http://127.0.0.1:4572","s3ForcePathStyle":true}'
         run: node ./main.js
