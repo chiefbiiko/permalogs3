@@ -11,7 +11,7 @@ jobs:
         ports:
           - "4572:4572"
         env:
-          - SERVICES=s3
+          SERVICES: s3
     steps:
       - name: clone repo
         uses: actions/checkout@v2.0.0
