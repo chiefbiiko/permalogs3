@@ -147,6 +147,8 @@ async function main() {
         process.env.EXTRA_S3_PARAMS
     };
 
+    console.error(">>> params", JSON.stringify(params, null, 2));
+
     if (!owner || !repo) {
       throw new Error(
         "unset env var GITHUB_REPOSITORY - must read owner/repo"
