@@ -9,6 +9,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AWS_REGION: us-east-1
       BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
+      DEBUG: permalogs3
     steps:
       - uses: actions/checkout@v2.0.0
       - uses: actions/setup-node@v1.1.2
