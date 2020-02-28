@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v1.1.2
         with:
           node-version: 12.x
-      - run: aws s3 --endpoint-url=http://localhost:4572 create-bucket --bucket=${{ env.BUCKET }}
+      - run: aws s3 --endpoint-url=http://localhost:4572 mb s3://${{ env.BUCKET }}
       - run: npm audit
       - run: npm ci
       - run: npm test
