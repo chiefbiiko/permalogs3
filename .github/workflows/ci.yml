@@ -8,7 +8,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AWS_REGION: us-east-1
-      GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
       BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
       DEBUG: permalogs3
     steps:
@@ -39,7 +38,8 @@ jobs:
           )
           echo ::set-output name=count::$count
       - name: running the permalogs3 action
-        run: node ./main.js
+        # TODO: figure out y main fails when not setting this env var here!?
+        run: GITHUB_REPOSITORY=chiefbiiko/poly1305 node ./main.js
       - name: testing bucket count after the permalogs3 action
         id: after
         run: |
