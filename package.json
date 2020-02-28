@@ -6,7 +6,7 @@
     "permalogs3": "./main.js"
   },
   "scripts": {
-    "test": "node ./test.js"
+    "test": "exit 1"
   },
   "repository": {
     "type": "git",

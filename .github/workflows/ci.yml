@@ -23,4 +23,22 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - run: npm audit
       - run: npm ci
-      - run: GITHUB_REPOSITORY=chiefbiiko/poly1305 npm test
+      - id: before
+        run: |
+          count=$( \
+            aws s3 ls --summarize --human-readable --recursive s3://${{ env.BUCKET }} | \
+            grep "Total Objects" | grep -oP "\d" \
+          )
+          echo ::set-output name=count::$count
+      - run: node ./main.js
+      - id: after
+        run: |
+          count=$( \
+            aws s3 ls --summarize --human-readable --recursive s3://${{ env.BUCKET }} | \
+            grep "Total Objects" | grep -oP "\d" \
+          )
+          echo ::set-output name=count::$count
+      - run: |
+          before_count=${{ steps.before.outputs.count }}
+          after_count=${{ steps.after.outputs.count }}
+          if [[ ! $after_count -gt $before_count ]]; then exit 1; fi

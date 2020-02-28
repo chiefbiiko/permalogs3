@@ -8,7 +8,9 @@ const debug = require("debug")("permalogs3")
 let s3;
 let actions;
 
-// TODO features: pretty-print progress-info like cargo -> mafintosh/diffy
+// TODO features:
+//  + pretty-print progress-info like cargo -> mafintosh/diffy
+//  + replace debugs with diffys
 
 const workflowCache = new Map();
 
