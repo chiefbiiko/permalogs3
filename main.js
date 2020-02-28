@@ -55,6 +55,8 @@ async function listWorkflowRuns(owner, repo, skip) {
   const { data: { workflow_runs } } = await actions
     .listRepoWorkflowRuns({ owner, repo });
 
+  debug("found workflow_runs", workflow_runs);
+
   const workflowRuns = await Promise.all(
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
@@ -63,13 +65,21 @@ async function listWorkflowRuns(owner, repo, skip) {
 
         const workflow = await getWorkflow(owner, repo, workflow_id);
 
+        debug("got workflow", workflow);
+
         const { data: { jobs } } = await actions
           .listJobsForWorkflowRun({ owner, repo, run_id: workflow_run.id });
 
+        debug("found jobs", jobs);
+
         const workflowRunJobLogs = await Promise.all(
           jobs.map(async job => {
+            debug(">>>>>>> job", JSON.stringify(job, null, 2));
+
             const { data: jobLogs } = await actions
               .listWorkflowJobLogs({ owner, repo, job_id: job.id });
+
+            debug("found jobLogs", jobLogs);
 
             return {
               [job.name]: {
