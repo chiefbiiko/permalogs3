@@ -12,7 +12,9 @@ const ENV = {
   GITHUB_REPOSITORY: "chiefbiiko/poly1305",
   AWS_REGION: "us-east-1",
   BUCKET: `permalogs3-testing-bucket-${new Date().getTime()}`,
-  EXTRA_S3_OPTS: `{"endpoint":"${S3_ENDPOINT}"}`
+  EXTRA_S3_OPTS: `{"endpoint":"${S3_ENDPOINT}"}`,
+  AWS_ACCESS_KEY_ID: "alibaba",
+  AWS_SECRET_ACCESS_KEY: "sesameopen"
 };
 
 const S3_OBJECT_KEY_PATTERN = new RegExp(
