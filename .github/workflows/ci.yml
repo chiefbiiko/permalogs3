@@ -13,23 +13,16 @@ jobs:
         env:
           SERVICES: s3
     steps:
-      - name: clone repo
-        uses: actions/checkout@v2.0.0
-      - name: install node n npm
-        uses: actions/setup-node@v1.1.2
+      - uses: actions/checkout@v2.0.0
+      - uses: actions/setup-node@v1.1.2
         with:
           node-version: 12.x
-      - name: audit deps
-        run: npm audit
-      - name: install deps
-        run: npm ci
-      - name: do a test run
-        env:
+      - run: npm audit
+      - run: npm ci
+      - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: chiefbiiko/poly1305
           AWS_REGION: us-east-1
           BUCKET: permalogs3-testing-bucket
-          EXTRA_S3_OPTS: '{"endpoint":"http://localhost:4572"}'
-          AWS_ACCESS_KEY_ID: alibaba
-          AWS_SECRET_ACCESS_KEY: sesameopen
+          EXTRA_S3_OPTS: '{"accessKeyId":"abc","secretAccessKey":"xyz","endpoint":"http://localhost:4572","s3ForcePathStyle":true}'
         run: node ./main.js
