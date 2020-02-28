@@ -23,4 +23,4 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - run: npm audit
       - run: npm ci
-      - run: node ./main.js
+      - run: GITHUB_REPOSITORY=chiefbiiko/poly1305 node ./main.js
