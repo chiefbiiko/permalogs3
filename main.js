@@ -1,5 +1,5 @@
 const { getInput, setFailed } = require("@actions/core");
-const { createActionAuth, createTokenAuth } = require("@octokit/auth");
+const { createActionAuth } = require("@octokit/auth");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
 const { join: pathJoin } = require("path");
@@ -141,13 +141,13 @@ async function main() {
     const params = {
       region: getInput("aws_region") || process.env.AWS_REGION,
       bucket: getInput("bucket") || process.env.BUCKET,
-      extraS3Opts: JSON.parse(getInput("extra_s3_opts") || "null") ||
-        process.env.EXTRA_S3_OPTS,
-      extraS3Params: JSON.parse(getInput("extra_s3_params") || "null") ||
-        process.env.EXTRA_S3_PARAMS
+      extraS3Opts: JSON.parse(
+        getInput("extra_s3_opts") || process.env.EXTRA_S3_OPTS || "null"
+      ),
+      extraS3Params: JSON.parse(
+        getInput("extra_s3_params") || process.env.EXTRA_S3_PARAMS || "null"
+      )
     };
-
-    console.error(">>> params", JSON.stringify(params, null, 2));
 
     if (!owner || !repo) {
       throw new Error(

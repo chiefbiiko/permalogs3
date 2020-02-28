@@ -1,5 +1,3 @@
-// NOTE: this test suite depends on the docker-compose stack
-
 const tape = require("tape");
 const S3 = require("aws-sdk/clients/s3");
 const util = require("util");
@@ -33,12 +31,12 @@ const s3 = new S3(
 tape("syncing to a bucket", async t => {
   await exec("node ./main.js", { env: ENV });
 
-  const { Contents: contents } = await s3.listObjectsV2().promise();
+  const { Contents: items } = await s3.listObjectsV2().promise();
 
-  contents
-    .map(content => content.Key)
-    .forEach(s3ObjectKey => {
-      t.true(S3_OBJECT_KEY_PATTERN.test(s3ObjectKey));
+  items
+    .forEach(item => {
+      t.true(S3_OBJECT_KEY_PATTERN.test(item.Key));
+      t.true(item.Size > 0);
     });
 
   t.end();
