@@ -5,6 +5,13 @@ on: [push, pull_request, release]
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:0.10.7
+        ports:
+          - "4572:4572"
+        env:
+          - SERVICES=s3
     steps:
       - name: clone repo
         uses: actions/checkout@v2.0.0
@@ -15,16 +22,14 @@ jobs:
       - name: audit deps
         run: npm audit
       - name: install deps
-        run: |
-          npm i -g wait-port
-          npm ci
-      - name: start s3 with localstack
-        run: docker-compose up -d
-      - name: await s3
-        run: wait-port -t 10000 localhost:4572
-      - name: run tests
+        run: npm ci
+      - name: do a test run
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm test
-      - name: down the stack
-        run: docker-compose down
+          GITHUB_REPOSITORY: chiefbiiko/poly1305
+          AWS_REGION: us-east-1
+          BUCKET: permalogs3-testing-bucket
+          EXTRA_S3_OPTS: '{"endpoint":"http://localhost:4572"}'
+          AWS_ACCESS_KEY_ID: alibaba
+          AWS_SECRET_ACCESS_KEY: sesameopen
+        run: node ./main.js
