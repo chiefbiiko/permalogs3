@@ -1,0 +1,28 @@
+name: ci
+
+on: [push, pull_request, release]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone repo
+        uses: actions/checkout@v2.0.0
+      - name: install node n npm
+        uses: actions/setup-node@v1.1.2
+        with:
+          node-version: 12.x
+      - name: audit deps
+        run: npm audit
+      - name: install deps
+        run: |
+          npm i -g wait-port
+          npm ci
+      - name: start s3 with localstack
+        run: docker-compose up -d
+      - name: await the stack
+        run: wait-port -t 10000 localhost:4572
+      - name: run tests
+        run: npm test
+      - name: down the stack
+        run: docker-compose down
