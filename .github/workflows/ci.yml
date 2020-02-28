@@ -26,6 +26,7 @@ jobs:
           aws --profile=default configure set aws_secret_access_key xyz
           aws --profile=default configure set aws_region us-east-1
       - run: aws s3 --endpoint-url=http://localhost:4572 mb s3://${{ env.BUCKET }}
+      - run: aws s3api --endpoint-url=http://localhost:4572 wait bucket-exists --bucket=${{ env.BUCKET }}
       - run: npm audit
       - run: npm ci
       - run: npm test
