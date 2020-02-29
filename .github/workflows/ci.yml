@@ -5,10 +5,6 @@ on: [push, pull_request, release]
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AWS_REGION: us-east-1
-      BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
     steps:
       - name: checkout the repo
         uses: actions/checkout@v2.0.0
@@ -16,15 +12,18 @@ jobs:
         uses: actions/setup-node@v1.1.2
         with:
           node-version: 12.x
-      - name: configure testing aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: audit node modules
+        run: npm audit
+      - name: install node modules
+        run: npm ci
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.1.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: audit dependencies
-        run: npm audit
-      - name: install dependencies
-        run: npm ci
-      - name: testing
-        run: GITHUB_REPOSITORY=chiefbiiko/poly1305 npm test
+          aws-region: us-east-1
+      - name: testing permalogs3
+        env:
+          BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm test
