@@ -27,4 +27,4 @@ jobs:
       - name: install dependencies
         run: npm ci
       - name: testing
-        run: npm test
+        run: GITHUB_REPOSITORY=chiefbiiko/poly1305 npm test
