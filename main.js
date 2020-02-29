@@ -6,6 +6,7 @@ const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
 const spinner = require('ora');
 const {
+  createSpinners,
   extractWorkflowRunId,
   failSpinning,
   getParams,
@@ -13,15 +14,25 @@ const {
   toS3ObjectKey
 } = require("./util.js");
 
+const spinners = createSpinners();
+
 let s3;
 let actions;
 
-const spinners = {
-  params: spinner("gathering parameters"),
-  clients: spinner("instantiating clients"),
-  s3Read: spinner("reading bucket state"),
-  actionsRead: spinner("reading pending logs"),
-  s3Write: spinner("pushing logs")
+async function initClients() {
+  s3 = new S3(
+    {
+      ...params.extraS3Opts,
+      apiVersion: "2006-03-01",
+      region: params.region,
+      params: { ...params.extraS3Params, Bucket: params.bucket }
+    }
+  );
+
+  const auth = await createActionAuth();
+  const { token } = await auth();
+  
+  actions = new Octokit({ auth: token }).actions;
 }
 
 const workflowCache = new Map();
@@ -140,18 +151,7 @@ async function main() {
     spinners.params.succeed();
     spinners.clients.start();
 
-    s3 = new S3(
-      {
-        ...params.extraS3Opts,
-        apiVersion: "2006-03-01",
-        region: params.region,
-        params: { ...params.extraS3Params, Bucket: params.bucket }
-      }
-    );
-
-    const auth = await createActionAuth();
-    const { token } = await auth();
-    actions = new Octokit({ auth: token }).actions;
+    initClients();
 
     spinners.clients.succeed();
     spinners.s3Read.start();

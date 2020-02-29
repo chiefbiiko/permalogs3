@@ -1,10 +1,7 @@
 {
   "name": "permalogs3",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "github action that stores workflow logs in s3",
-  "bin": {
-    "permalogs3": "./main.js"
-  },
   "scripts": {
     "test": "node ./test/test.js"
   },

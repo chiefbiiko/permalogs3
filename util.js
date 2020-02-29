@@ -1,6 +1,16 @@
-const { join: pathJoin } = require("path");
+const { join } = require("path");
 
 const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d)+\.json$/;
+
+function createSpinners() {
+  return {
+    params: spinner("gathering parameters"),
+    clients: spinner("instantiating clients"),
+    s3Read: spinner("reading bucket state"),
+    actionsRead: spinner("reading pending logs"),
+    s3Write: spinner("pushing logs")
+  };
+}
 
 function extractWorkflowRunId({ Key: s3ObjectKey }) {
   return Number(s3ObjectKey.replace(WORKFLOW_RUN_ID_PATTERN, "$1"));
@@ -67,6 +77,7 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
 }
 
 module.exports = {
+  createSpinners,
   extractWorkflowRunId,
   failSpinning,
   getParams,
