@@ -8,9 +8,9 @@ const {
   failSpinning,
   mergeDocs,
   toS3ObjectKey
-} = require("./../util.js");
+} = require("./../src/util.js");
 
-const main = `${__dirname}/../main.js`;
+const main = `${__dirname}/../src/main.js`;
 
 const s3 = new S3(
   {

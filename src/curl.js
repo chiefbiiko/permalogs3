@@ -76,11 +76,11 @@ async function listWorkflowRuns(owner, repo, skip) {
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
       .map(async workflow_run => {
-        const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
-
         const workflow_id = cutWorkflowId(workflow_run.workflow_url);
 
-        // const workflow = await getWorkflow(owner, repo, workflow_id);
+        const workflow = await getWorkflow(owner, repo, workflow_id);
+
+        const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
 
         const { data: { jobs } } = await actions
           .listJobsForWorkflowRun({ owner, repo, run_id: workflow_run.id });

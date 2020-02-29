@@ -26,8 +26,4 @@ jobs:
         env:
           BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # when GITHUB_REPOSITORY=chiefbiiko/permalogs3
-          # listRepoWorkflowRuns returns a read error 
-          # "Cannot access 'workflow' before initialization"
-          GITHUB_REPOSITORY: chiefbiiko/poly1305
         run: npm test
