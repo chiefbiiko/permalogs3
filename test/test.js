@@ -28,7 +28,10 @@ async function listObjects() {
 async function emptyBucket() {
   const old = await listObjects();
 
-  await Promise.all(old.map(object => s3.deleteObject({ Key: object.Key })));
+  return Promise.all(old.map(object => {
+    console.log(">>>>>>> boutu delete", object.Key);
+    return s3.deleteObject({ Key: object.Key });
+  }));
 }
 
 async function sleep(ms) {
