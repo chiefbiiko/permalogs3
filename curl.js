@@ -70,14 +70,11 @@ async function listStoredWorkflowRunIds() {
 
 async function listWorkflowRuns(owner, repo, skip) {
   const { data: { workflow_runs } } = await actions
-    .listRepoWorkflowRuns({ owner, repo });
+    .listRepoWorkflowRuns({ owner, repo, status: "completed" });
 
   const workflowRuns = await Promise.all(
     workflow_runs
-      .filter(
-        workflow_run => !skip.includes(workflow_run.id) &&
-          workflow_run.status === "completed"
-      )
+      .filter(workflow_run => !skip.includes(workflow_run.id))
       .map(async workflow_run => {
         const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
 
@@ -90,7 +87,6 @@ async function listWorkflowRuns(owner, repo, skip) {
 
         const workflowRunJobLogs = await Promise.all(
           jobs
-            .filter(job => job.status === "completed")
             .map(async job => {
               const { data: jobLogs } = await actions
                 .listWorkflowJobLogs({ owner, repo, job_id: job.id });
