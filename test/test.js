@@ -49,6 +49,16 @@ tape("constructing a s3 object key", t => {
   t.end();
 });
 
+tape("cutting a workflow id", t => {
+  const { input, expected } = fixtures["cutting a workflow id"];
+
+  const actual = cutWorkflowId(input);
+
+  t.equal(actual, expected);
+
+  t.end();
+});
+
 tape("extracting a workflow run id from a s3 object key", t => {
   const { input, expected } = fixtures
     ["extracting a workflow run id from a s3 object key"];

@@ -13,7 +13,7 @@ function createSpinners() {
 }
 
 function cutWorkflowId(workflowUrl) {
-  return workflowUrl.split("/").pop();
+  return Number(workflowUrl.split("/").pop());
 }
 
 const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d)+\.json$/;
