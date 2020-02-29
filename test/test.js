@@ -25,12 +25,14 @@ async function listObjects() {
   return Contents;
 }
 
-async function emptyucket() {
+async function emptyBucket() {
   const old = await listObjects();
 
   await Promise.all(old.map(object => s3.deleteObject({ Key: object.Key })));
-  
-  await new Promise(resolve => setTimeout(resolve, 2000))
+}
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 tape("merging docs", t => {
@@ -81,6 +83,8 @@ tape("extracting a workflow run id from a s3 object key", t => {
 
 tape("pushing logs to a bucket", async t => {
   await emptyBucket();
+  
+  await sleep(2000);
 
   const before = await listObjects();
 
@@ -101,6 +105,8 @@ tape("pushing logs to a bucket", async t => {
 
 tape.skip("permalogs3 is idempotent", async t => {
   await emptyBucket();
+  
+  await sleep(2000);
 
   const before = await listObjects();
 
