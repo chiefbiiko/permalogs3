@@ -69,12 +69,18 @@ async function listStoredWorkflowRunIds() {
 }
 
 async function listWorkflowRuns(owner, repo, skip) {
+  console.error(">>>>>>> skip", skip);
+  
   const { data: { workflow_runs } } = await actions
     .listRepoWorkflowRuns({ owner, repo, status: "completed" });
 
   const workflowRuns = await Promise.all(
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
+      .map(wr => {
+        console.error(">>>>>>> wr.id", wr.id);
+        return wr;
+      })
       .map(async workflow_run => {
         const workflow_id = cutWorkflowId(workflow_run.workflow_url);
 

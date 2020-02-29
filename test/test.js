@@ -79,7 +79,7 @@ tape("extracting a workflow run id from a s3 object key", t => {
   t.end();
 });
 
-tape("pushing logs to a bucket", { timeout: 5000 }, async t => {
+tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
   await emptyBucket();
 
   const before = await listObjects();
@@ -97,7 +97,7 @@ tape("pushing logs to a bucket", { timeout: 5000 }, async t => {
   t.end();
 });
 
-tape("permalogs3 is idempotent", { timeout: 5000 }, async t => {
+tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
   await emptyBucket();
 
   const before = await listObjects();
