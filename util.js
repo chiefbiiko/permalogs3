@@ -48,8 +48,8 @@ function getParams() {
         "the corresponding env vars AWS_REGION and BUCKET"
     );
   }
-  
-  return { owner, repo, params }
+
+  return { owner, repo, params };
 }
 
 function mergeDocs(docs) {
@@ -76,7 +76,7 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
     workflowRun.id
   ].join("_");
 
-  return pathJoin(
+  return join(
     owner,
     repo,
     "workflows",

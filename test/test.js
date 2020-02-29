@@ -1,7 +1,7 @@
 const tape = require("tape");
 const S3 = require("aws-sdk/clients/s3");
 const exec = require("util").promisify(require("child_process").exec);
-const { fixtures } = require("./fixtures.js")
+const { fixtures } = require("./fixtures.js");
 const {
   extractWorkflowRunId,
   failSpinning,
@@ -70,7 +70,7 @@ tape("pushing logs to a bucket", async t => {
   t.equal(before.length, 0);
 
   const { stderr } = await exec(`node ${main}`);
-  
+
   t.equal(stderr, "");
 
   const after = await listObjects();
@@ -92,17 +92,17 @@ tape("permalogs3 is idempotent", async t => {
   t.equal(before.length, 0);
 
   let { stderr } = await exec(`node ${main}`);
-  
+
   t.equal(stderr, "");
-  
+
   const inbetween = await listObjects();
 
   t.assert(inbetween.length > 0);
-  
+
   inbetween.forEach(object => t.assert(object.Size > 0));
-  
+
   stderr = await exec(`node ${main}`);
-  
+
   t.equal(stderr, "");
 
   const lastly = await listObjects();

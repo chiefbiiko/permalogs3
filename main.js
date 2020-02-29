@@ -4,7 +4,7 @@ const { getInput, setFailed } = require("@actions/core");
 const { createActionAuth } = require("@octokit/auth-action");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
-const spinner = require('ora');
+const spinner = require("ora");
 const {
   createSpinners,
   extractWorkflowRunId,
@@ -32,7 +32,7 @@ async function initClients() {
 
   const auth = await createActionAuth();
   const { token } = await auth();
-  
+
   actions = new Octokit({ auth: token }).actions;
 }
 
@@ -96,7 +96,6 @@ async function listWorkflowRuns(owner, repo, skip) {
           jobs
             .filter(job => job.status !== "in_progress")
             .map(async job => {
-
               const { data: jobLogs } = await actions
                 .listWorkflowJobLogs({ owner, repo, job_id: job.id });
 
@@ -146,7 +145,7 @@ async function batchStore(pending) {
 async function main() {
   try {
     spinners.params.start();
-    
+
     const { owner, repo, params } = getParams();
 
     spinners.params.succeed();
@@ -160,23 +159,23 @@ async function main() {
     await mkbcktp();
 
     const skip = await listStoredWorkflowRunIds();
-    
+
     spinners.s3Read.succeed();
-    spinners.actionsRead.start()
+    spinners.actionsRead.start();
 
     const pending = await listWorkflowRuns(owner, repo, skip);
-    
+
     spinners.actionsRead.succeed();
-    spinners.s3Write.start()
+    spinners.s3Write.start();
 
     await batchStore(pending);
-    
+
     spinners.s3Write.succeed();
 
     console.log(summary(pending.length, params.bucket));
   } catch (err) {
     failSpinning(spinners);
-    
+
     setFailed(err.message);
   }
 }
