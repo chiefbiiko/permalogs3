@@ -16,6 +16,10 @@ const s3 = new S3(
   }
 );
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function listObjects() {
   const { Contents } = await s3.listObjectsV2().promise();
 
@@ -68,6 +72,8 @@ tape("pushing logs to a bucket", async t => {
   t.equal(before.length, 0);
 
   await exec("node ./main.js");
+  
+  await sleep(1000);
 
   const after = await listObjects();
 
@@ -88,6 +94,8 @@ tape("permalogs3 is idempotent", async t => {
   t.equal(before.length, 0);
 
   await exec("node ./main.js");
+  
+  await sleep(1000);
   
   const inbetween = await listObjects();
 
