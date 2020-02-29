@@ -112,8 +112,10 @@ tape("permalogs3 is idempotent", { timeout: 5000 }, async t => {
 
   inbetween.forEach(object => t.assert(object.Size > 0));
 
-  await exec(`node ${main}`);
-
+  const { stdout, stderr } = await exec(`node ${main}`);
+  console.log(stdout);
+  console.error(stderr);
+  
   const lastly = await listObjects();
 
   t.deepEqual(lastly, inbetween);
