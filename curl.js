@@ -3,6 +3,7 @@ const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
 
 const {
+  cutWorkflowId,
   extractWorkflowRunId,
   mergeDocs,
   toS3ObjectKey
@@ -77,7 +78,7 @@ async function listWorkflowRuns(owner, repo, skip) {
       .map(async workflow_run => {
         const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
 
-        const workflow_id = workflow_run.workflow_url.split("/").pop();
+        const workflow_id = cutWorkflowId(workflow_run.workflow_url);
 
         const workflow = await getWorkflow(owner, repo, workflow_id);
 
