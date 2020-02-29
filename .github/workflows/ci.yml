@@ -9,7 +9,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AWS_REGION: us-east-1
       BUCKET: permalogs3testingstack-bucket-13p5inhfqasui
-      DEBUG: permalogs3
     steps:
       - name: checkout the repo
         uses: actions/checkout@v2.0.0
@@ -23,11 +22,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: empty the testing bucket
-        run: aws s3 rm s3://${{ env.BUCKET }} --recursive
       - name: audit dependencies
         run: npm audit
       - name: install dependencies
         run: npm ci
-      - name: running the permalogs3 action
+      - name: testing
         run: npm test

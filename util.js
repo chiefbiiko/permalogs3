@@ -1,5 +1,15 @@
 const { join: pathJoin } = require("path");
 
+function extractWorkflowRunId({ Key: s3ObjectKey }) {
+  return Number(s3ObjectKey.split("/").pop().split("_").pop());
+}
+
+function failSpinning(spinners) {
+  Object.values(spinners)
+    .filter(spinner => spinner.isSpinning())
+    .forEach(spinner => spinner.fail());
+}
+
 function mergeDocs(docs) {
   return docs.reduce((acc, cur) => Object.assign(acc, cur), {});
 }
@@ -24,4 +34,9 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
   );
 }
 
-module.exports = { mergeDocs, toS3ObjectKey };
+module.exports = {
+  extractWorkflowRunId,
+  failSpinning,
+  mergeDocs,
+  toS3ObjectKey
+};

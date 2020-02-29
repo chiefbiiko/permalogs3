@@ -6,7 +6,7 @@
     "permalogs3": "./main.js"
   },
   "scripts": {
-    "test": "node ./test.js"
+    "test": "node ./test/test.js"
   },
   "repository": {
     "type": "git",
@@ -21,10 +21,10 @@
   "homepage": "https://github.com/actions/chiefbiiko/permalogs3#readme",
   "dependencies": {
     "@actions/core": "1.2.2",
-    "@octokit/auth": "1.1.1",
+    "@octokit/auth-action": "1.2.0",
     "@octokit/rest": "17.0.0",
     "aws-sdk": "2.627.0",
-    "debug": "4.1.1"
+    "ora": "4.0.3"
   },
   "devDependencies": {
     "tape": "4.13.0"
