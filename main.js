@@ -1,6 +1,6 @@
 // NOTE: aws credentials must be set in the shared credentials file or env vars
 
-const { getInput, setFailed } = require("@actions/core");
+const { setFailed } = require("@actions/core");
 
 const {
   batchStore,

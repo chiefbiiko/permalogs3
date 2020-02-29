@@ -1,3 +1,4 @@
+const { getInput } = require("@actions/core");
 const spinner = require("ora");
 const { join } = require("path");
 
