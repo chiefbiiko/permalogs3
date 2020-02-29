@@ -1,3 +1,4 @@
+const spinner = require("ora");
 const { join } = require("path");
 
 const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d)+\.json$/;
