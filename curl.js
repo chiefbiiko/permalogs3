@@ -74,7 +74,10 @@ async function listWorkflowRuns(owner, repo, skip) {
 
   const workflowRuns = await Promise.all(
     workflow_runs
-      .filter(workflow_run => !skip.includes(workflow_run.id))
+      .filter(
+        workflow_run => workflow_run.id !== process.env.GITHUB_RUN_ID &&
+          !skip.includes(workflow_run.id)
+      )
       .map(async workflow_run => {
         const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
 
