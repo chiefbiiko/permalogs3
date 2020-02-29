@@ -1,7 +1,9 @@
 const { join: pathJoin } = require("path");
 
 function extractWorkflowRunId({ Key: s3ObjectKey }) {
-  return Number(s3ObjectKey.split("/").pop().split("_").pop());
+  return Number(
+    s3ObjectKey.split("/").pop().split("_").pop().replace(".json", "")
+  );
 }
 
 function failSpinning(spinners) {
