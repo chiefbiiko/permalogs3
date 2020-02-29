@@ -8,8 +8,38 @@ function extractWorkflowRunId({ Key: s3ObjectKey }) {
 
 function failSpinning(spinners) {
   Object.values(spinners)
-    .filter(spinner => spinner.isSpinning())
+    .filter(spinner => spinner.isSpinning)
     .forEach(spinner => spinner.fail());
+}
+
+function getParams() {
+  const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+  const params = {
+    region: getInput("aws_region") || process.env.AWS_REGION,
+    bucket: getInput("bucket") || process.env.BUCKET,
+    extraS3Opts: JSON.parse(
+      getInput("extra_s3_opts") || process.env.EXTRA_S3_OPTS || "null"
+    ),
+    extraS3Params: JSON.parse(
+      getInput("extra_s3_params") || process.env.EXTRA_S3_PARAMS || "null"
+    )
+  };
+
+  if (!owner || !repo) {
+    throw new Error(
+      "unset env var GITHUB_REPOSITORY - must read owner/repo"
+    );
+  }
+
+  if (!params.region || !params.bucket) {
+    throw new Error(
+      "undefined params - either pass inputs aws_region and bucket or set " +
+        "the corresponding env vars AWS_REGION and BUCKET"
+    );
+  }
+  
+  return { owner, repo, params }
 }
 
 function mergeDocs(docs) {
@@ -39,6 +69,7 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
 module.exports = {
   extractWorkflowRunId,
   failSpinning,
+  getParams,
   mergeDocs,
   toS3ObjectKey
 };
