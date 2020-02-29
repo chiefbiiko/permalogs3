@@ -16,10 +16,6 @@ const s3 = new S3(
   }
 );
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function listObjects() {
   const { Contents } = await s3.listObjectsV2().promise();
 
@@ -71,9 +67,10 @@ tape("pushing logs to a bucket", async t => {
 
   t.equal(before.length, 0);
 
-  await exec("node ./main.js");
+  const { stdout, stderr } = await exec("node ./main.js");
   
-  await sleep(1000);
+  console.log(stdout);
+  console.error(stderr);
 
   const after = await listObjects();
 
@@ -84,7 +81,7 @@ tape("pushing logs to a bucket", async t => {
   t.end();
 });
 
-tape("permalogs3 is idempotent", async t => {
+tape.skip("permalogs3 is idempotent", async t => {
   const old = await listObjects();
 
   await Promise.all(old.map(object => s3.deleteObject({ Key: object.Key })));
@@ -94,8 +91,6 @@ tape("permalogs3 is idempotent", async t => {
   t.equal(before.length, 0);
 
   await exec("node ./main.js");
-  
-  await sleep(1000);
   
   const inbetween = await listObjects();
 
