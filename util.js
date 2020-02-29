@@ -60,7 +60,7 @@ function summary(count, bucket) {
   return [
     "🏁",
     "just pushed",
-    count
+    count,
     "pending workflow run logs to bucket",
     bucket
   ].join(" ");
