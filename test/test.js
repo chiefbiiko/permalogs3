@@ -69,9 +69,14 @@ tape("pushing logs to a bucket", async t => {
 
   t.equal(before.length, 0);
 
-  const { stderr } = await exec(`node ${main}`);
+  try {
+    const { stderr } = await exec(`node ${main}`);
 
-  t.equal(stderr, "");
+    t.equal(stderr, "");
+  } catch (err) {
+    console.error(err);
+    t.fail(err);
+  }
 
   const after = await listObjects();
 
