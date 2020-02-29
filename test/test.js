@@ -79,16 +79,14 @@ tape("extracting a workflow run id from a s3 object key", t => {
   t.end();
 });
 
-tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
+tape("pushing logs to a bucket", { timeout: 5000 }, async t => {
   await emptyBucket();
 
   const before = await listObjects();
 
   t.equal(before.length, 0);
 
-  const { stderr } = await exec(`node ${main}`);
-
-  t.equal(stderr, "");
+  await exec(`node ${main}`);
 
   const after = await listObjects();
 
@@ -99,16 +97,14 @@ tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
   t.end();
 });
 
-tape.skip("permalogs3 is idempotent", { timeout: 10000 }, async t => {
+tape("permalogs3 is idempotent", { timeout: 5000 }, async t => {
   await emptyBucket();
 
   const before = await listObjects();
 
   t.equal(before.length, 0);
 
-  let { stderr } = await exec(`node ${main}`);
-
-  t.equal(stderr, "");
+  await exec(`node ${main}`);
 
   const inbetween = await listObjects();
 
@@ -116,9 +112,7 @@ tape.skip("permalogs3 is idempotent", { timeout: 10000 }, async t => {
 
   inbetween.forEach(object => t.assert(object.Size > 0));
 
-  stderr = await exec(`node ${main}`);
-
-  t.equal(stderr, "");
+  await exec(`node ${main}`);
 
   const lastly = await listObjects();
 
