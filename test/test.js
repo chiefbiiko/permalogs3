@@ -1,6 +1,5 @@
 const tape = require("tape");
 const S3 = require("aws-sdk/clients/s3");
-const { relative } = require("path");
 const exec = require("util").promisify(require("child_process").exec);
 const { fixtures } = require("./fixtures.js")
 const {
@@ -10,7 +9,7 @@ const {
   toS3ObjectKey
 } = require("./../util.js");
 
-const main = relative(__filename, "main.js");
+const main = `${__dirname}/../main.js`;
 
 const s3 = new S3(
   {
@@ -70,7 +69,7 @@ tape("pushing logs to a bucket", async t => {
 
   t.equal(before.length, 0);
 
-  const { stdout, stderr } = await exec(`node ${main}`);
+  const { stderr } = await exec(`node ${main}`);
   
   t.equal(stderr, "");
   
@@ -81,7 +80,7 @@ tape("pushing logs to a bucket", async t => {
 
   t.assert(after.length > 0);
 
-  after.forEach(object => t.assert(object.Size > 0, "object size"));
+  after.forEach(object => t.assert(object.Size > 0));
 
   t.end();
 });
@@ -95,15 +94,19 @@ tape.skip("permalogs3 is idempotent", async t => {
 
   t.equal(before.length, 0);
 
-  await exec(`node ${main}`);
+  const { stderr } = await exec(`node ${main}`);
+  
+  t.equal(stderr, "");
   
   const inbetween = await listObjects();
 
   t.assert(inbetween.length > 0);
   
-  inbetween.forEach(object => t.assert(object.Size > 0, "object size"));
+  inbetween.forEach(object => t.assert(object.Size > 0));
   
-  await exec(`node ${main}`);
+  const { stderr } = await exec(`node ${main}`);
+  
+  t.equal(stderr, "");
 
   const lastly = await listObjects();
 
