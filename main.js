@@ -54,6 +54,8 @@ async function main() {
   } catch (err) {
     failSpinning(spinners);
 
+    console.error(err.stack);
+
     setFailed(err.message);
   }
 }

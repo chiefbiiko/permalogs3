@@ -80,14 +80,9 @@ tape("pushing logs to a bucket", async t => {
 
   t.equal(before.length, 0);
 
-  try {
-    const { stderr } = await exec(`node ${main}`);
+  const { stderr } = await exec(`node ${main}`);
 
-    t.equal(stderr, "");
-  } catch (err) {
-    console.error(err);
-    t.fail(err);
-  }
+  t.equal(stderr, "");
 
   const after = await listObjects();
 
@@ -98,7 +93,7 @@ tape("pushing logs to a bucket", async t => {
   t.end();
 });
 
-tape("permalogs3 is idempotent", async t => {
+tape.skip("permalogs3 is idempotent", async t => {
   const old = await listObjects();
 
   await Promise.all(old.map(object => s3.deleteObject({ Key: object.Key })));
