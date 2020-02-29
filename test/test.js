@@ -3,6 +3,7 @@ const S3 = require("aws-sdk/clients/s3");
 const exec = require("util").promisify(require("child_process").exec);
 const { fixtures } = require("./fixtures.js");
 const {
+  cutWorkflowId,
   extractWorkflowRunId,
   failSpinning,
   mergeDocs,
