@@ -11,6 +11,7 @@ const {
   failSpinning,
   getParams,
   mergeDocs,
+  summary,
   toS3ObjectKey
 } = require("./util.js");
 
@@ -171,8 +172,8 @@ async function main() {
     await batchStore(pending);
     
     spinners.s3Write.succeed();
-    // just pushed $pending pending workflow run logs to $params.bucket
-    // total object count is now $skip + $pending
+
+    console.log(summary(pending.length, params.bucket));
   } catch (err) {
     failSpinning(spinners);
     

@@ -4,11 +4,11 @@ const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d)+\.json$/;
 
 function createSpinners() {
   return {
-    params: spinner("gathering parameters"),
-    clients: spinner("instantiating clients"),
-    s3Read: spinner("reading bucket state"),
-    actionsRead: spinner("reading pending logs"),
-    s3Write: spinner("pushing logs")
+    params: spinner("📬 gathering parameters"),
+    clients: spinner("👾 instantiating clients"),
+    s3Read: spinner("🌌 checkihg bucket state"),
+    actionsRead: spinner("📃 reading pending logs"),
+    s3Write: spinner("🎁 pushing logs")
   };
 }
 
@@ -54,6 +54,16 @@ function getParams() {
 
 function mergeDocs(docs) {
   return docs.reduce((acc, cur) => Object.assign(acc, cur), {});
+}
+
+function summary(count, bucket) {
+  return [
+    "🏁",
+    "just pushed",
+    count
+    "pending workflow run logs to bucket",
+    bucket
+  ].join(" ");
 }
 
 function toS3ObjectKey(owner, repo, workflow, workflowRun) {
