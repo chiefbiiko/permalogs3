@@ -99,5 +99,6 @@ module.exports = {
   failSpinning,
   getParams,
   mergeDocs,
+  summary,
   toS3ObjectKey
 };
