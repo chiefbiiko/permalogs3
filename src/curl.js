@@ -80,6 +80,8 @@ async function listWorkflowRuns(owner, repo, skip) {
 
   // const { data: { workflow_runs } } = await octokit.paginate(req);
   const workflow_runs = await octokit.paginate(req);
+  
+  console.error(">>>>>>> workflow_runs", JSON.stringify(workflow_runs));
 
   const workflowRuns = await Promise.all(
     workflow_runs
@@ -112,7 +114,7 @@ async function listWorkflowRuns(owner, repo, skip) {
               // const { data: jobLogs } = await octokit.paginate(req);
               const jobLogs = await octokit.paginate(req);
               
-              console.error(">>>>>>> jobLogs", JSON.stringify(jobLogs));
+              console.error(">>>>>>> typeof jobLogs", typeof jobLogs);
 
               return {
                 [job.name]: {
