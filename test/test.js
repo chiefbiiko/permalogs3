@@ -94,7 +94,7 @@ tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
 
   t.assert(after.length > 0);
 
-  after.forEach(object => t.assert(object.Size > 0));
+  t.assert(after.every(object => object.Size > 0));
 
   t.end();
 });
@@ -112,7 +112,7 @@ tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
 
   t.assert(inbetween.length > 0);
 
-  inbetween.forEach(object => t.assert(object.Size > 0));
+  t.assert(inbetween.every(object => object.Size > 0));
 
   await exec(`node ${main}`);
 
