@@ -105,6 +105,8 @@ function summary(count, bucket) {
   }
 }
 
+const NOT_ALPHANUMERIC_PATTERN = /[^a-zA-Z0-9]/g;
+
 function toS3ObjectKey(owner, repo, workflow, workflowRun) {
   const date = workflowRun.created_at.slice(0, 10);
 
@@ -119,8 +121,7 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
     owner,
     repo,
     "workflow_runs",
-    // TODO: transofrm this to a path safe workflow name
-    workflow.name,
+    workflow.name.replace(NOT_ALPHANUMERIC_PATTERN, "_"),
     date,
     `${workflowRunMetaData}.json`
   ].join("/");
