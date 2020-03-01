@@ -68,55 +68,39 @@ async function listStoredWorkflowRunIds(owner, repo) {
   const { Contents: contents } = await s3
     .listObjectsV2({ Prefix: `${owner}/${repo}/workflow_runs/` }).promise();
 
-  return contents.map(extractWorkflowRunId);
+  return new Set(contents.map(extractWorkflowRunId));
 }
 
 async function listWorkflowRuns(owner, repo, skip) {
-  // const { data: { workflow_runs } } = await actions
-  //   .listRepoWorkflowRuns({ owner, repo, status: "completed" });
-  
+  // NOTE: the octokit request filter for status "completed" seems to
+  // not work with octokit.paginate
   let req = octokit.actions.listRepoWorkflowRuns.endpoint
     .merge({ owner, repo, status: "completed" });
 
-  // const { data: { workflow_runs } } = await octokit.paginate(req);
   const workflow_runs = await octokit.paginate(req);
-  
-  // console.error(">>>>>>> workflow_runs 1st", JSON.stringify(workflow_runs.slice(0, 1)));
 
   const workflowRuns = await Promise.all(
     workflow_runs
-      .filter(workflow_run => !skip.includes(workflow_run.id) && workflow_run.status === "completed")
+      .filter(({ id, status }) => status === "completed" && !skip.has(id))
       .map(async workflow_run => {
-        // console.error(">>>>>>> wr", JSON.stringify(workflow_run));
-        console.error(">>>>>>> workflow_run.workflow_url", workflow_run.workflow_url)
         const workflowId = cutWorkflowId(workflow_run.workflow_url);
 
         const workflow = await getWorkflow(owner, repo, workflowId);
 
         const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
 
-        // const { data: { jobs } } = await actions
-        //   .listJobsForWorkflowRun({ owner, repo, run_id: workflow_run.id });
-        
         req = octokit.actions.listJobsForWorkflowRun.endpoint
           .merge({ owner, repo, run_id: workflow_run.id });
-        
-        // const { data: { jobs } } = await octokit.paginate(req);
+
         const jobs = await octokit.paginate(req);
 
         const workflowRunJobLogs = await Promise.all(
           jobs
             .map(async job => {
-              // const { data: jobLogs } = await actions
-              //   .listWorkflowJobLogs({ owner, repo, job_id: job.id });
-              
               req = octokit.actions.listWorkflowJobLogs.endpoint
-                .merge({ owner, repo, job_id: job.id })
+                .merge({ owner, repo, job_id: job.id });
 
-              // const { data: jobLogs } = await octokit.paginate(req);
               const jobLogs = await octokit.paginate(req);
-              
-              // console.error(">>>>>>> typeof jobLogs", typeof jobLogs);
 
               return {
                 [job.name]: {
