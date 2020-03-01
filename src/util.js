@@ -4,11 +4,41 @@ const { join } = require("path");
 
 function createSpinners() {
   return {
-    params: spinner("📬 gathering parameters"),
-    clients: spinner("👾 instantiating clients"),
-    s3Read: spinner("🌌 checkihg bucket state"),
-    actionsRead: spinner("📃 reading pending logs"),
-    s3Write: spinner("🎁 pushing logs")
+    params: spinner(
+      {
+        text: "📬 gathering params",
+        color: "cyan",
+        stream: process.stdout
+      }
+    ),
+    clients: spinner(
+      {
+        text: "👾 instantiating clients",
+        color: "magenta",
+        stream: process.stdout
+      }
+    ),
+    s3Read: spinner(
+      {
+        text: "🌌 checkihg bucket state",
+        color: "red",
+        stream: process.stdout
+      }
+    ),
+    actionsRead: spinner(
+      {
+        text: "📃 reading pending logs",
+        color: "green",
+        stream: process.stdout
+      }
+    ),
+    s3Write: spinner(
+      {
+        text: "🎁 pushing logs",
+        color: "yellow",
+        stream: process.stdout
+      }
+    )
   };
 }
 

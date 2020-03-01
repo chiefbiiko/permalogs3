@@ -64,23 +64,20 @@ async function initClients(params) {
 
 async function listStoredWorkflowRunIds() {
   const { Contents: contents } = await s3.listObjectsV2().promise();
+  console.error(">>>>>>> contents", contents);
 
   return contents.map(extractWorkflowRunId);
 }
 
 async function listWorkflowRuns(owner, repo, skip) {
   console.error(">>>>>>> skip", skip);
-  
+
   const { data: { workflow_runs } } = await actions
     .listRepoWorkflowRuns({ owner, repo, status: "completed" });
 
   const workflowRuns = await Promise.all(
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
-      .map(wr => {
-        console.error(">>>>>>> wr.id", wr.id);
-        return wr;
-      })
       .map(async workflow_run => {
         const workflow_id = cutWorkflowId(workflow_run.workflow_url);
 
@@ -122,7 +119,7 @@ async function listWorkflowRuns(owner, repo, skip) {
           conclusion: workflow_run.conclusion,
           html_url: workflow_run.html_url,
           pull_requests: workflow_run.pull_requests,
-          // workflow,
+          workflow,
           jobs: mergeDocs(workflowRunJobLogs)
         };
       })
@@ -134,8 +131,11 @@ async function listWorkflowRuns(owner, repo, skip) {
 async function mkbcktp() {
   try {
     await s3.headBucket().promise();
+    console.error(">>>>>>> s3.headBucket succeeded");
   } catch (_) {
+    console.error(">>>>>>> s3.headBucket threw\n", _.stack);
     await s3.createBucket().promise();
+    console.error(">>>>>>> s3.createBucket succeeded");
   }
 }
 
