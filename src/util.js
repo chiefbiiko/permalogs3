@@ -1,6 +1,5 @@
 const { getInput } = require("@actions/core");
 const spinner = require("ora");
-const { join } = require("path");
 
 function createSpinners() {
   return {
@@ -46,7 +45,7 @@ function cutWorkflowId(workflowUrl) {
   return Number(workflowUrl.split("/").pop());
 }
 
-const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d)+\.json$/;
+const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d+)\.json$/;
 
 function extractWorkflowRunId({ Key: s3ObjectKey }) {
   return Number(s3ObjectKey.replace(WORKFLOW_RUN_ID_PATTERN, "$1"));
@@ -112,14 +111,15 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
     workflowRun.id
   ].join("_");
 
-  return join(
+  return [
     owner,
     repo,
     "workflows",
+    // TODO: transofrm this to a path safe workflow name
     workflow.name,
     date,
     `${workflowRunMetaData}.json`
-  );
+  ].join("/");
 }
 
 module.exports = {

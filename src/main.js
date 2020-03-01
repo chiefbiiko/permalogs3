@@ -36,7 +36,7 @@ async function main() {
 
     await mkbcktp();
 
-    const skip = await listStoredWorkflowRunIds();
+    const skip = await listStoredWorkflowRunIds(owner, repo);
 
     spinners.s3Read.succeed();
     spinners.actionsRead.start();

@@ -62,9 +62,9 @@ async function initClients(params) {
   actions = new Octokit({ auth: token }).actions;
 }
 
-async function listStoredWorkflowRunIds() {
-  const { Contents: contents } = await s3.listObjectsV2().promise();
-  console.error(">>>>>>> contents", contents);
+async function listStoredWorkflowRunIds(owner, repo) {
+  const { Contents: contents } = await s3
+    .listObjectsV2({ Prefix: `${owner}/${repo}/workflows/` }).promise();
 
   return contents.map(extractWorkflowRunId);
 }
@@ -131,11 +131,8 @@ async function listWorkflowRuns(owner, repo, skip) {
 async function mkbcktp() {
   try {
     await s3.headBucket().promise();
-    console.error(">>>>>>> s3.headBucket succeeded");
   } catch (_) {
-    console.error(">>>>>>> s3.headBucket threw\n", _.stack);
     await s3.createBucket().promise();
-    console.error(">>>>>>> s3.createBucket succeeded");
   }
 }
 
