@@ -1,3 +1,5 @@
+// TODO: handle pagination for s3/actions.list*
+
 const { createActionAuth } = require("@octokit/auth-action");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
@@ -64,14 +66,12 @@ async function initClients(params) {
 
 async function listStoredWorkflowRunIds(owner, repo) {
   const { Contents: contents } = await s3
-    .listObjectsV2({ Prefix: `${owner}/${repo}/workflows/` }).promise();
+    .listObjectsV2({ Prefix: `${owner}/${repo}/workflow_runs/` }).promise();
 
   return contents.map(extractWorkflowRunId);
 }
 
 async function listWorkflowRuns(owner, repo, skip) {
-  console.error(">>>>>>> skip", skip);
-
   const { data: { workflow_runs } } = await actions
     .listRepoWorkflowRuns({ owner, repo, status: "completed" });
 

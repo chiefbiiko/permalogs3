@@ -118,7 +118,7 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
   return [
     owner,
     repo,
-    "workflows",
+    "workflow_runs",
     // TODO: transofrm this to a path safe workflow name
     workflow.name,
     date,
