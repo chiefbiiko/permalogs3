@@ -44,11 +44,14 @@ async function main() {
     const pending = await listWorkflowRuns(owner, repo, skip);
 
     spinners.actionsRead.succeed();
-    spinners.s3Write.start();
 
-    await batchStore(pending);
+    if (pending.length) {
+      spinners.s3Write.start();
 
-    spinners.s3Write.succeed();
+      await batchStore(pending);
+
+      spinners.s3Write.succeed();
+    }
 
     console.log(summary(pending.length, params.bucket));
   } catch (err) {

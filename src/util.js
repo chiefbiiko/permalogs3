@@ -92,13 +92,17 @@ function mergeDocs(docs) {
 }
 
 function summary(count, bucket) {
-  return [
-    "🏁",
-    "just pushed",
-    count,
-    "pending workflow run logs to bucket",
-    bucket
-  ].join(" ");
+  if (count) {
+    return [
+      "🏁",
+      "just pushed",
+      count,
+      "unstashed workflow run logs to bucket",
+      bucket
+    ].join(" ");
+  } else {
+    return ["✨ bucket", bucket, "state is up-2-date"].join(" ");
+  }
 }
 
 function toS3ObjectKey(owner, repo, workflow, workflowRun) {
