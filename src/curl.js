@@ -78,7 +78,8 @@ async function listWorkflowRuns(owner, repo, skip) {
   let req = octokit.actions.listRepoWorkflowRuns.endpoint
     .merge({ owner, repo, status: "completed" });
 
-  const { data: { workflow_runs } } = await octokit.paginate(req);
+  // const { data: { workflow_runs } } = await octokit.paginate(req);
+  const workflow_runs = await octokit.paginate(req);
 
   const workflowRuns = await Promise.all(
     workflow_runs
@@ -96,7 +97,8 @@ async function listWorkflowRuns(owner, repo, skip) {
         req = octokit.actions.listJobsForWorkflowRun.endpoint
           .merge({ owner, repo, run_id: workflow_run.id });
         
-        const { data: { jobs } } = await octokit.paginate(req);
+        // const { data: { jobs } } = await octokit.paginate(req);
+        const jobs = await octokit.paginate(req);
 
         const workflowRunJobLogs = await Promise.all(
           jobs
@@ -107,7 +109,8 @@ async function listWorkflowRuns(owner, repo, skip) {
               req = octokit.actions.listWorkflowJobLogs.endpoint
                 .merge({ owner, repo, job_id: job.id })
 
-              const { data: jobLogs } = await octokit.paginate(req);
+              // const { data: jobLogs } = await octokit.paginate(req);
+              const jobLogs = await octokit.paginate(req);
               
               console.error(">>>>>>> jobLogs", JSON.stringify(jobLogs));
 
