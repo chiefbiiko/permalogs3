@@ -81,12 +81,14 @@ async function listWorkflowRuns(owner, repo, skip) {
   // const { data: { workflow_runs } } = await octokit.paginate(req);
   const workflow_runs = await octokit.paginate(req);
   
-  console.error(">>>>>>> workflow_runs", JSON.stringify(workflow_runs));
+  console.error(">>>>>>> workflow_runs 1st", JSON.stringify(workflow_runs.slice(0, 1)));
 
   const workflowRuns = await Promise.all(
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
       .map(async workflow_run => {
+        console.error(">>>>>>> wr", JSON.stringify(workflow_run));
+        
         const workflowId = cutWorkflowId(workflow_run.workflow_url);
 
         const workflow = await getWorkflow(owner, repo, workflowId);
