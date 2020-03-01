@@ -86,7 +86,8 @@ tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
 
   t.equal(before.length, 0);
 
-  await exec(`node ${main}`);
+  const { stderr } = await exec(`node ${main}`);
+  console.error(">>>>>>> child stderr\n", stderr);
 
   const after = await listObjects();
 

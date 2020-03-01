@@ -12,7 +12,7 @@ const {
 } = require("./util.js");
 
 let s3;
-let actions;
+let octokit;
 
 async function batchStore(pending) {
   return Promise.all(
@@ -32,7 +32,7 @@ async function getWorkflow(owner, repo, workflow_id) {
     return workflowCache.get(cacheKey);
   }
 
-  const { data: workflow } = await actions
+  const { data: workflow } = await octokit.actions
     .getWorkflow({ owner, repo, workflow_id });
 
   const _workflow = {
@@ -61,7 +61,7 @@ async function initClients(params) {
   const auth = await createActionAuth();
   const { token } = await auth();
 
-  actions = new Octokit({ auth: token }).actions;
+  octokit = new Octokit({ auth: token });
 }
 
 async function listStoredWorkflowRunIds(owner, repo) {
@@ -72,27 +72,44 @@ async function listStoredWorkflowRunIds(owner, repo) {
 }
 
 async function listWorkflowRuns(owner, repo, skip) {
-  const { data: { workflow_runs } } = await actions
-    .listRepoWorkflowRuns({ owner, repo, status: "completed" });
+  // const { data: { workflow_runs } } = await actions
+  //   .listRepoWorkflowRuns({ owner, repo, status: "completed" });
+  
+  let req = octokit.actions.listRepoWorkflowRuns.endpoint
+    .merge({ owner, repo, status: "completed" });
+
+  const { data: { workflow_runs } } = await octokit.paginate(req);
 
   const workflowRuns = await Promise.all(
     workflow_runs
       .filter(workflow_run => !skip.includes(workflow_run.id))
       .map(async workflow_run => {
-        const workflow_id = cutWorkflowId(workflow_run.workflow_url);
+        const workflowId = cutWorkflowId(workflow_run.workflow_url);
 
-        const workflow = await getWorkflow(owner, repo, workflow_id);
+        const workflow = await getWorkflow(owner, repo, workflowId);
 
         const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
 
-        const { data: { jobs } } = await actions
-          .listJobsForWorkflowRun({ owner, repo, run_id: workflow_run.id });
+        // const { data: { jobs } } = await actions
+        //   .listJobsForWorkflowRun({ owner, repo, run_id: workflow_run.id });
+        
+        req = octokit.actions.listJobsForWorkflowRun.endpoint
+          .merge({ owner, repo, run_id: workflow_run.id });
+        
+        const { data: { jobs } } = await octokit.paginate(req);
 
         const workflowRunJobLogs = await Promise.all(
           jobs
             .map(async job => {
-              const { data: jobLogs } = await actions
-                .listWorkflowJobLogs({ owner, repo, job_id: job.id });
+              // const { data: jobLogs } = await actions
+              //   .listWorkflowJobLogs({ owner, repo, job_id: job.id });
+              
+              req = octokit.actions.listWorkflowJobLogs.endpoint
+                .merge({ owner, repo, job_id: job.id })
+
+              const { data: jobLogs } = await octokit.paginate(req);
+              
+              console.error(">>>>>>> jobLogs", JSON.stringify(jobLogs));
 
               return {
                 [job.name]: {
