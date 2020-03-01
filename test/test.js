@@ -33,6 +33,8 @@ async function emptyBucket() {
   );
 }
 
+tape.onFinish(emptyBucket);
+
 tape("merging docs", t => {
   const { input, expected } = fixtures["merging docs"];
 
