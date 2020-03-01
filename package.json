@@ -20,6 +20,7 @@
     "@actions/core": "1.2.2",
     "@octokit/auth-action": "1.2.0",
     "@octokit/rest": "17.0.0",
+    "ajv": "6.12.0",
     "aws-sdk": "2.627.0",
     "ora": "4.0.3"
   },

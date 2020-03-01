@@ -2,6 +2,7 @@ const tape = require("tape");
 const S3 = require("aws-sdk/clients/s3");
 const exec = require("util").promisify(require("child_process").exec);
 const { fixtures } = require("./fixtures.js");
+const { validate } = require("./../src/schm.js");
 const {
   cutWorkflowId,
   extractWorkflowRunId,
@@ -94,7 +95,11 @@ tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
 
   t.assert(after.length > 0);
 
-  t.assert(after.every(object => object.Size > 0));
+  t.assert(after.every(object => object.Size > 100));
+  
+  const { Body: body } = await s3.getObject({ Key: after[0].Key }).promise();
+  
+  t.assert(validate(JSON.parse(body)));
 
   t.end();
 });
@@ -112,7 +117,7 @@ tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
 
   t.assert(inbetween.length > 0);
 
-  t.assert(inbetween.every(object => object.Size > 0));
+  t.assert(inbetween.every(object => object.Size > 100));
 
   await exec(`node ${main}`);
 

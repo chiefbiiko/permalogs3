@@ -1,7 +1,7 @@
 const { createActionAuth } = require("@octokit/auth-action");
 const { Octokit } = require("@octokit/rest");
 const S3 = require("aws-sdk/clients/s3");
-
+const { validate } = require("./schm.js");
 const {
   cutWorkflowId,
   extractWorkflowRunId,
@@ -121,13 +121,13 @@ async function listWorkflowRuns(owner, repo, skip) {
                   completed_at: job.completed_at,
                   status: job.status,
                   conclusion: job.conclusion,
-                  logs: jobLogs
+                  logs: jobLogs[0]
                 }
               };
             })
         );
 
-        return {
+        const data = {
           s3ObjectKey,
           id: workflow_run.id,
           head_branch: workflow_run.head_branch,
@@ -142,6 +142,12 @@ async function listWorkflowRuns(owner, repo, skip) {
           workflow,
           jobs: mergeDocs(workflowRunJobLogs)
         };
+        
+        if (!validate(data)) {
+          throw new Error("mapped outbound data does not match json schema");
+        }
+
+        return data;
       })
   );
 
