@@ -1,11 +1,11 @@
 name: permalogs3
-description: stores github actions logs in s3
+description: Stores Github Actions logs in AWS S3
 inputs:
   aws_region:
-    description: AWS region of your Github Actions perma-logs bucket
+    description: AWS region of your logs bucket
     required: false
   bucket:
-    description: Name of your perma-logs bucket
+    description: Name of your logs bucket
     required: false
   extra_s3_opts:
     description: JSON document of extra instantiation options for the S3 client
@@ -13,9 +13,12 @@ inputs:
   extra_s3_params:
     description: JSON document of extra params for every S3 operation
     required: false
+  github_token:
+    description: the GITHUB_TOKEN secret
+    required: false 
 runs:
   using: node12
-  main: main.js
+  main: src/main.js
 author: Noah Anabiik Schwarz https://github.com/chiefbiiko
 branding:
   icon: cloud
