@@ -27,6 +27,10 @@ const fixtures = {
       Key: "owner/repo/workflow_runs/ci/2020-02-29/push_master_hash_1.json"
     },
     expected: 1
+  },
+  "reading pagination info off the link header": {
+    input: ' <https://api.github.com/user/repos?page=3&per_page=100>; rel="next", \n <https://api.github.com/user/repos?page=50&per_page=100>; rel="last"',
+    expected: { next: 3, last: 50 }
   }
 };
 

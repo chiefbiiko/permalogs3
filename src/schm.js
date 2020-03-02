@@ -3,11 +3,12 @@ const Ajv = require("ajv");
 const validate = new Ajv().compile({
   type: "object",
   properties: {
+    // TODO: format, lower the date dashes
     s3ObjectKey: { type: "string" },
     id: { type: "integer" },
     head_branch: { type: "string", minLength: 1 },
     head_sha: { type: "string", pattern: "^[0-9a-f]{40}$" },
-    // TODO:enum
+    // TODO: enum
     event: { type: "string", minLength: 1 },
     created_at: { type: "string", format: "date-time" },
     updated_at: { type: "string", format: "date-time" },

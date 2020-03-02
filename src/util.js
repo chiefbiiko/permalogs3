@@ -17,23 +17,16 @@ function createSpinners() {
         stream: process.stdout
       }
     ),
-    s3Read: spinner(
+    fetch: spinner(
       {
         text: "🌌 checkihg bucket state",
-        color: "red",
+        color: "blue",
         stream: process.stdout
       }
     ),
-    actionsRead: spinner(
+    push: spinner(
       {
-        text: "📃 reading pending logs",
-        color: "green",
-        stream: process.stdout
-      }
-    ),
-    s3Write: spinner(
-      {
-        text: "🎁 pushing logs",
+        text: "📃 pushing pending logs",
         color: "yellow",
         stream: process.stdout
       }
@@ -57,6 +50,32 @@ function failSpinning(spinners) {
     .forEach(spinner => spinner.fail());
 }
 
+const ARROW_PATTERN = /^\s*<|>\s*$/g;
+
+function getPageNumbers(linkHeader) {
+  const parts = linkHeader.split(",").map(part => part.trim());
+  
+  const nextPart = parts.find(part => part.includes('rel="next"'));
+  const lastPart = parts.find(part => part.includes('rel="last"'));
+
+  let next = 0;
+  let last = 0;
+
+  if (nextPart) {
+    const url = new URL(nextPart.split(";")[0].replace(ARROW_PATTERN, ""));
+
+    next = Number(url.searchParams.get("page"));
+  }
+
+  if (lastPart) {
+    const url = new URL(lastPart.split(";")[0].replace(ARROW_PATTERN, ""));
+
+    last = Number(url.searchParams.get("page"));
+  }
+
+  return { next, last };
+}
+
 function getParams() {
   const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
@@ -74,6 +93,12 @@ function getParams() {
   if (!owner || !repo) {
     throw new Error(
       "unset env var GITHUB_REPOSITORY - must read owner/repo"
+    );
+  }
+  
+  if (!(process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN)) {
+    throw new Error(
+      "unset env var GITHUB_TOKEN - alternatively use the input github_token"
     );
   }
 
@@ -132,6 +157,7 @@ module.exports = {
   createSpinners,
   extractWorkflowRunId,
   failSpinning,
+  getPageNumbers,
   getParams,
   mergeDocs,
   summary,

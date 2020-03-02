@@ -5,21 +5,13 @@ const { validate } = require("./schm.js");
 const {
   cutWorkflowId,
   extractWorkflowRunId,
+  getPageNumbers,
   mergeDocs,
   toS3ObjectKey
 } = require("./util.js");
 
 let s3;
 let octokit;
-
-async function batchStore(pending) {
-  return Promise.all(
-    pending.map(workflowRun => s3.putObject({
-      Key: workflowRun.s3ObjectKey,
-      Body: JSON.stringify(workflowRun, null, 2)
-    }).promise())
-  );
-}
 
 const workflowCache = new Map();
 
@@ -83,75 +75,120 @@ async function listStoredWorkflowRunIds(owner, repo) {
   return new Set(ids);
 }
 
-async function listWorkflowRuns(owner, repo, skip) {
-  // NOTE: the octokit request filter for status "completed" seems to
-  // not work with octokit.paginate
-  let req = octokit.actions.listRepoWorkflowRuns.endpoint
-    .merge({ owner, repo, status: "completed" });
+function createRepoWorkflowRunsAit(owner, repo) {
+  return {
+    _nextPage: 1,
+    _lastPage: 0,
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+    async next() {
+      if (!this._nextPage) {
+        return { value: [], done: true };
+      }
 
-  const workflow_runs = await octokit.paginate(req);
-
-  const workflowRuns = await Promise.all(
-    workflow_runs
-      .filter(({ id, status }) => status === "completed" && !skip.has(id))
-      .map(async workflow_run => {
-        const workflowId = cutWorkflowId(workflow_run.workflow_url);
-
-        const workflow = await getWorkflow(owner, repo, workflowId);
-
-        const s3ObjectKey = toS3ObjectKey(owner, repo, workflow, workflow_run);
-
-        req = octokit.actions.listJobsForWorkflowRun.endpoint
-          .merge({ owner, repo, run_id: workflow_run.id });
-
-        const jobs = await octokit.paginate(req);
-
-        const workflowRunJobLogs = await Promise.all(
-          jobs
-            .map(async job => {
-              req = octokit.actions.listWorkflowJobLogs.endpoint
-                .merge({ owner, repo, job_id: job.id });
-
-              const jobLogs = await octokit.paginate(req);
-
-              return {
-                [job.name]: {
-                  id: job.id,
-                  started_at: job.started_at,
-                  completed_at: job.completed_at,
-                  status: job.status,
-                  conclusion: job.conclusion,
-                  logs: jobLogs[0]
-                }
-              };
-            })
+      // is the status filter flaky?
+      const { headers: { link }, data: { workflow_runs } } = await octokit
+        .actions
+        .listRepoWorkflowRuns(
+          { owner, repo, status: "completed", page: this._nextPage }
         );
 
-        const data = {
-          s3ObjectKey,
-          id: workflow_run.id,
-          head_branch: workflow_run.head_branch,
-          head_sha: workflow_run.head_sha,
-          event: workflow_run.event,
-          created_at: workflow_run.created_at,
-          updated_at: workflow_run.updated_at,
-          status: workflow_run.status,
-          conclusion: workflow_run.conclusion,
-          html_url: workflow_run.html_url,
-          pull_requests: workflow_run.pull_requests,
-          workflow,
-          jobs: mergeDocs(workflowRunJobLogs)
-        };
+      const { next, last } = getPageNumbers(link);
 
-        if (!validate(data)) {
-          throw new Error("mapped outbound data does not match json schema");
-        }
+      this._nextPage = next;
+      this._lastPage = last;
 
-        return data;
-      })
-  );
+      return { value: workflow_runs, done: false };
+    }
+  };
+}
 
-  return workflowRuns.flat(1);
+async function storeWorkflowRuns(owner, repo, skip) {
+  let stored = 0;
+
+  for await (const workflow_runs of createRepoWorkflowRunsAit(owner, repo)) {
+    await Promise.all(
+      workflow_runs
+        .filter(({ id, status }) => status === "completed" && !skip.has(id))
+        .map(async workflow_run => {
+          const workflowId = cutWorkflowId(workflow_run.workflow_url);
+
+          const workflow = await getWorkflow(owner, repo, workflowId);
+
+          const s3ObjectKey = toS3ObjectKey(
+            owner,
+            repo,
+            workflow,
+            workflow_run
+          );
+
+          const reqOpts = octokit.actions.listJobsForWorkflowRun.endpoint
+            .merge({ owner, repo, run_id: workflow_run.id });
+
+          const jobs = await octokit.paginate(reqOpts);
+
+          const workflowRunJobLogs = await Promise.all(
+            jobs
+              .filter(({ status }) => status === "completed")
+              .map(async job => {
+                // NOTE: not paginating here bc we r consuming a single 
+                // text/plain file here via a github api redirect
+                const { data: logs } = await octokit.actions
+                  .listWorkflowJobLogs({ owner, repo, job_id: job.id })
+                  // if job logs cannot be found we store an empty string
+                  .catch(err => {
+                    if (err.status === 404) {
+                      return { data: "" }
+                    }
+                
+                    throw err
+                  });
+
+                return {
+                  [job.name]: {
+                    id: job.id,
+                    started_at: job.started_at,
+                    completed_at: job.completed_at,
+                    status: job.status,
+                    conclusion: job.conclusion,
+                    logs
+                  }
+                };
+              })
+          );
+
+          const data = {
+            s3ObjectKey,
+            id: workflow_run.id,
+            head_branch: workflow_run.head_branch,
+            head_sha: workflow_run.head_sha,
+            event: workflow_run.event,
+            created_at: workflow_run.created_at,
+            updated_at: workflow_run.updated_at,
+            status: workflow_run.status,
+            conclusion: workflow_run.conclusion,
+            html_url: workflow_run.html_url,
+            pull_requests: workflow_run.pull_requests,
+            workflow,
+            jobs: mergeDocs(workflowRunJobLogs)
+          };
+
+          if (!validate(data)) {
+            throw new Error("mapped outbound data does not match json schema");
+          }
+
+          await s3.putObject({
+            Key: data.s3ObjectKey,
+            Body: JSON.stringify(data, null, 2)
+          }).promise();
+        })
+    );
+
+    stored += workflow_runs.length;
+  }
+
+  return stored;
 }
 
 async function mkbcktp() {
@@ -163,10 +200,9 @@ async function mkbcktp() {
 }
 
 module.exports = {
-  batchStore,
   getWorkflow,
   initClients,
   listStoredWorkflowRunIds,
-  listWorkflowRuns,
+  storeWorkflowRuns,
   mkbcktp
 };

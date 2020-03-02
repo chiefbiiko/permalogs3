@@ -3,11 +3,10 @@
 const { setFailed } = require("@actions/core");
 
 const {
-  batchStore,
   getWorkflow,
   initClients,
   listStoredWorkflowRunIds,
-  listWorkflowRuns,
+  storeWorkflowRuns,
   mkbcktp
 } = require("./curl.js");
 
@@ -32,28 +31,20 @@ async function main() {
     initClients(params);
 
     spinners.clients.succeed();
-    spinners.s3Read.start();
+    spinners.fetch.start();
 
     await mkbcktp();
 
     const skip = await listStoredWorkflowRunIds(owner, repo);
 
-    spinners.s3Read.succeed();
-    spinners.actionsRead.start();
+    spinners.fetch.succeed();
+    spinners.push.start();
 
-    const pending = await listWorkflowRuns(owner, repo, skip);
+    const stored = await storeWorkflowRuns(owner, repo, skip);
 
-    spinners.actionsRead.succeed();
+    spinners.push.succeed();
 
-    if (pending.length) {
-      spinners.s3Write.start();
-
-      await batchStore(pending);
-
-      spinners.s3Write.succeed();
-    }
-
-    console.log(summary(pending.length, params.bucket));
+    console.log(summary(stored, params.bucket));
   } catch (err) {
     failSpinning(spinners);
 

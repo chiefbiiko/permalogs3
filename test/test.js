@@ -7,6 +7,7 @@ const {
   cutWorkflowId,
   extractWorkflowRunId,
   failSpinning,
+  getPageNumbers,
   mergeDocs,
   toS3ObjectKey
 } = require("./../src/util.js");
@@ -34,7 +35,18 @@ async function emptyBucket() {
   );
 }
 
-tape.onFinish(emptyBucket);
+// TODO: test getParams
+
+tape("reading pagination info off the link header", t => {
+  const { input, expected } = fixtures
+    ["reading pagination info off the link header"];
+
+  const actual = getPageNumbers(input);
+
+  t.deepEqual(actual, expected);
+
+  t.end();
+});
 
 tape("merging docs", t => {
   const { input, expected } = fixtures["merging docs"];
@@ -82,7 +94,7 @@ tape("extracting a workflow run id from a s3 object key", t => {
   t.end();
 });
 
-tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
+tape("pushing logs to a bucket", { timeout: 20000 }, async t => {
   await emptyBucket();
 
   const before = await listObjects();
@@ -97,14 +109,10 @@ tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
 
   t.assert(after.every(object => object.Size > 100));
 
-  const { Body: body } = await s3.getObject({ Key: after[0].Key }).promise();
-
-  t.assert(validate(JSON.parse(body)));
-
   t.end();
 });
 
-tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
+tape("permalogs3 is idempotent", { timeout: 30000 }, async t => {
   await emptyBucket();
 
   const before = await listObjects();
@@ -112,7 +120,7 @@ tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
   t.equal(before.length, 0);
 
   await exec(`node ${main}`);
-
+  
   const inbetween = await listObjects();
 
   t.assert(inbetween.length > 0);
@@ -130,7 +138,7 @@ tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
 
 tape("schema validation", async t => {
   const objects = await listObjects();
-
+  
   const { Body: body } = await s3.getObject({ Key: objects[0].Key }).promise();
 
   t.assert(validate(JSON.parse(body)));
