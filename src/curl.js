@@ -142,7 +142,7 @@ async function listWorkflowRuns(owner, repo, skip) {
           workflow,
           jobs: mergeDocs(workflowRunJobLogs)
         };
-        
+
         if (!validate(data)) {
           throw new Error("mapped outbound data does not match json schema");
         }

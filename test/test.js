@@ -96,9 +96,9 @@ tape("pushing logs to a bucket", { timeout: 10000 }, async t => {
   t.assert(after.length > 0);
 
   t.assert(after.every(object => object.Size > 100));
-  
+
   const { Body: body } = await s3.getObject({ Key: after[0].Key }).promise();
-  
+
   t.assert(validate(JSON.parse(body)));
 
   t.end();
@@ -124,6 +124,16 @@ tape("permalogs3 is idempotent", { timeout: 10000 }, async t => {
   const lastly = await listObjects();
 
   t.deepEqual(lastly, inbetween);
+
+  t.end();
+});
+
+tape("schema validation", async t => {
+  const objects = await listObjects();
+
+  const { Body: body } = await s3.getObject({ Key: objects[0].Key }).promise();
+
+  t.assert(validate(JSON.parse(body)));
 
   t.end();
 });
