@@ -7,7 +7,7 @@ a github action that pushes its repo's workflow run logs to s3
 ## y
 
 <p align="center">
-  <img width="786" height="164" src="https://raw.githubusercontent.com/chiefbiiko/permalogs3/master/github_actions_logs_expire.png" alt="github actions logs expire" title="expiring logs">
+  <img width="786" height="164" src="https://raw.githubusercontent.com/chiefbiiko/permalogs3/master/github_actions_logs_expire.PNG" alt="github actions logs expire" title="expiring logs">
 </p>
 
 ## prerequisites
@@ -62,7 +62,7 @@ jobs:
           # EXTRA_S3_PARAMS: bound params for the aws-sdk-js s3 client 
 ```
 
-for each workflow run one json file gets stored in s3. see details below.
+for each completed workflow run one json file gets stored in s3. see details below.
 
 the action is idempotent and only pushes unstashed logs to s3.
 
@@ -80,7 +80,7 @@ should not be run excessively for a given repo since you will probably hit the g
 
 ## s3 object json schema
 
-```
+``` js
 {
   type: "object",
   properties: {
