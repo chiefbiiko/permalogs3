@@ -38,7 +38,7 @@ function cutWorkflowId(workflowUrl) {
   return Number(workflowUrl.split("/").pop());
 }
 
-const WORKFLOW_RUN_ID_PATTERN = /^.+_(\d+)\.json$/;
+const WORKFLOW_RUN_ID_PATTERN = /^.+-(\d+)\.json$/;
 
 function extractWorkflowRunId({ Key: s3ObjectKey }) {
   return Number(s3ObjectKey.replace(WORKFLOW_RUN_ID_PATTERN, "$1"));
@@ -140,13 +140,13 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
     workflowRun.head_branch,
     workflowRun.head_sha,
     workflowRun.id
-  ].join("_");
+  ].join("-");
 
   return [
     owner,
     repo,
-    "workflow_runs",
-    workflow.name.replace(NOT_ALPHANUMERIC_PATTERN, "_"),
+    "workflow-runs",
+    workflow.name.replace(NOT_ALPHANUMERIC_PATTERN, "-"),
     date,
     `${workflowRunMetaData}.json`
   ].join("/");

@@ -11,13 +11,25 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              # TODO: narrow the allowed actions amap
-              - Sid: AllowTestingBucketFullAccess
+              - Sid: AllowHeadAndListBucket
                 Effect: Allow
-                Action: s3:*
-                Resource:
-                  - !Sub arn:aws:s3:::${Bucket}
-                  - !Sub arn:aws:s3:::${Bucket}/*
+                Action:
+                  - s3:HeadBucket
+                  - s3:ListBucket
+                Resource: !Sub arn:aws:s3:::${Bucket}
+              - Sid: AllowPutObject
+                Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub arn:aws:s3:::${Bucket}/*
+
+              - Sid: AllowCreateBucket
+                Effect: Allow
+                Action: s3:CreateBucket
+                Resource: "*"
+              - Sid: AllowDeleteObject
+                Effect: Allow
+                Action: s3:DeleteObject
+                Resource: !Sub arn:aws:s3:::${Bucket}/*
   AccessKey:
     Type: AWS::IAM::AccessKey
     Properties:

@@ -16,7 +16,7 @@ const fixtures = {
         id: 1
       }
     },
-    expected: "owner/repo/workflow_runs/ci/2020-02-29/push_master_hash_1.json"
+    expected: "owner/repo/workflow-runs/ci/2020-02-29/push-master-hash-1.json"
   },
   "cutting a workflow id": {
     input: "https://github.com/chiefbiiko/permalogs3/actions/workflows/419",
@@ -24,7 +24,7 @@ const fixtures = {
   },
   "extracting a workflow run id from a s3 object key": {
     input: {
-      Key: "owner/repo/workflow_runs/ci/2020-02-29/push_master_hash_1.json"
+      Key: "owner/repo/workflow-runs/ci/2020-02-29/push-master-hash-1.json"
     },
     expected: 1
   },
