@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 12.x
       - name: audit node modules
-        run: npm audit
+        run: npm audit --production
       - name: install node modules
         run: npm ci
       - name: testing permalogs3

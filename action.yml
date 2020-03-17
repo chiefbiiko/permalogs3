@@ -1,6 +1,7 @@
 name: permalogs3
 description: Stores Github Actions logs in AWS S3
 inputs:
+  # TODO: accept aws credentials
   aws_region:
     description: AWS region of your logs bucket
     required: false
@@ -18,7 +19,7 @@ inputs:
     required: false 
 runs:
   using: node12
-  main: src/main.js
+  main: dist/index.js
 author: Noah Anabiik Schwarz https://github.com/chiefbiiko
 branding:
   icon: cloud
