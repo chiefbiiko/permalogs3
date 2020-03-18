@@ -41,6 +41,10 @@ Statement:
 
 run the action on a daily, weekly or whatever schedule.
 
+for each completed workflow run one json file gets stored in s3. see details below.
+
+the action is idempotent and only pushes unstashed logs to s3.
+
 ``` yml
 on:
   schedule:
@@ -62,17 +66,15 @@ jobs:
           # EXTRA_S3_PARAMS: bound params for the aws-sdk-js s3 client 
 ```
 
-for each completed workflow run one json file gets stored in s3. see details below.
+the action can also be configured via inputs. see [`action.yml`](./action.yml).
 
-the action is idempotent and only pushes unstashed logs to s3.
-
-should not be run excessively for a given repo since you will probably hit the github api's rate limit otherwise.
+should not be run excessively for a given repo since you will probably hit the github api's rate limit otherwise - once a day should be fine afaict.
 
 ## s3 object key pattern
 
 **key components**
 
-`owner/repo/workflow-runs/<workflowName>/<date>/<event>-<headBranch>-<headSha>-<workflowRunId>.json`
+`<owner>/<repo>/workflow-runs/<workflowName>/<date>/<event>-<headBranch>-<headSha>-<workflowRunId>.json`
 
 **example**
 
