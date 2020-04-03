@@ -1,6 +1,6 @@
 {
   "name": "permalogs3",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "github action that stores workflow logs in s3",
   "scripts": {
     "build": "ncc build src/main.js -o dist",

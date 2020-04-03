@@ -55,7 +55,7 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - uses: chiefbiiko/permalogs3@v0.1.1
+      - uses: chiefbiiko/permalogs3@v0.1.2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
