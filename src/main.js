@@ -10,44 +10,30 @@ const {
   mkbcktp
 } = require("./curl.js");
 
-const {
-  createSpinners,
-  failSpinning,
-  getParams,
-  summary
-} = require("./util.js");
-
-const spinners = createSpinners();
+const { getParams, summary } = require("./util.js");
 
 async function main() {
   try {
-    spinners.params.start();
+    console.log("📬 gathering params");
 
     const { owner, repo, params } = getParams();
 
-    spinners.params.succeed();
-    spinners.clients.start();
+    console.log("👾 instantiating clients");
 
     initClients(params);
 
-    spinners.clients.succeed();
-    spinners.fetch.start();
+    console.log("🌌 checkihg bucket state");
 
     await mkbcktp();
 
     const skip = await listStoredWorkflowRunIds(owner, repo);
 
-    spinners.fetch.succeed();
-    spinners.push.start();
+    console.log("⬆️ pushing pending logs");
 
     const stored = await storeWorkflowRuns(owner, repo, skip);
 
-    spinners.push.succeed();
-
     console.log(summary(stored, params.bucket));
   } catch (err) {
-    failSpinning(spinners);
-
     console.error(err.stack);
 
     setFailed(err.message);

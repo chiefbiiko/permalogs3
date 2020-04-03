@@ -1,38 +1,4 @@
 const { getInput } = require("@actions/core");
-const spinner = require("ora");
-
-function createSpinners() {
-  return {
-    params: spinner(
-      {
-        text: "📬 gathering params",
-        color: "cyan",
-        stream: process.stdout
-      }
-    ),
-    clients: spinner(
-      {
-        text: "👾 instantiating clients",
-        color: "magenta",
-        stream: process.stdout
-      }
-    ),
-    fetch: spinner(
-      {
-        text: "🌌 checkihg bucket state",
-        color: "blue",
-        stream: process.stdout
-      }
-    ),
-    push: spinner(
-      {
-        text: "📃 pushing pending logs",
-        color: "yellow",
-        stream: process.stdout
-      }
-    )
-  };
-}
 
 function cutWorkflowId(workflowUrl) {
   return Number(workflowUrl.split("/").pop());
@@ -42,12 +8,6 @@ const WORKFLOW_RUN_ID_PATTERN = /^.+-(\d+)\.json$/;
 
 function extractWorkflowRunId({ Key: s3ObjectKey }) {
   return Number(s3ObjectKey.replace(WORKFLOW_RUN_ID_PATTERN, "$1"));
-}
-
-function failSpinning(spinners) {
-  Object.values(spinners)
-    .filter(spinner => spinner.isSpinning)
-    .forEach(spinner => spinner.fail());
 }
 
 const ARROW_PATTERN = /^\s*<|>\s*$/g;
@@ -130,6 +90,10 @@ function summary(count, bucket) {
   }
 }
 
+function toS3ObjectKeyPrefix(owner, repo) {
+  return `${owner}/${repo}/workflow-runs/`;
+}
+
 const NOT_ALPHANUMERIC_PATTERN = /[^a-zA-Z0-9]/g;
 
 function toS3ObjectKey(owner, repo, workflow, workflowRun) {
@@ -154,12 +118,11 @@ function toS3ObjectKey(owner, repo, workflow, workflowRun) {
 
 module.exports = {
   cutWorkflowId,
-  createSpinners,
   extractWorkflowRunId,
-  failSpinning,
   getPageNumbers,
   getParams,
   mergeDocs,
   summary,
+  toS3ObjectKeyPrefix,
   toS3ObjectKey
 };

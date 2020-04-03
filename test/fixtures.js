@@ -3,6 +3,10 @@ const fixtures = {
     input: [{ a: { name: "alice", "#": 1 } }, { b: { name: "bob", "#": 2 } }],
     expected: { a: { name: "alice", "#": 1 }, b: { name: "bob", "#": 2 } }
   },
+  "constructing a s3 object key prefix": {
+    input: { owner: "owner", repo: "repo" },
+    expected: "owner/repo/workflow-runs/"
+  },
   "constructing a s3 object key": {
     input: {
       owner: "owner",

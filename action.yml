@@ -1,7 +1,7 @@
 name: permalogs3
 description: Stores Github Actions logs in AWS S3
 inputs:
-  # TODO: accept aws credentials
+  # TODO: accept aws credentials as "inputs"
   aws_region:
     description: AWS region of your logs bucket
     required: false

@@ -9,6 +9,7 @@ const {
   failSpinning,
   getPageNumbers,
   mergeDocs,
+  toS3ObjectKeyPrefix,
   toS3ObjectKey
 } = require("./../src/util.js");
 
@@ -54,6 +55,16 @@ tape("merging docs", t => {
   const actual = mergeDocs(input);
 
   t.deepEqual(actual, expected);
+
+  t.end();
+});
+
+tape("constructing a s3 object key prefix", t => {
+  const { input, expected } = fixtures["constructing a s3 object key prefix"];
+
+  const actual = toS3ObjectKeyPrefix(input.owner, input.repo);
+
+  t.equal(actual, expected);
 
   t.end();
 });

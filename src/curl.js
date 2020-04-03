@@ -7,6 +7,7 @@ const {
   extractWorkflowRunId,
   getPageNumbers,
   mergeDocs,
+  toS3ObjectKeyPrefix,
   toS3ObjectKey
 } = require("./util.js");
 
@@ -55,7 +56,7 @@ async function initClients(params) {
 }
 
 async function listStoredWorkflowRunIds(owner, repo) {
-  const prefix = `${owner}/${repo}/workflow_runs/`;
+  const prefix = toS3ObjectKeyPrefix(owner, repo);
 
   const ids = [];
 

@@ -48,14 +48,14 @@ the action is idempotent and only pushes unstashed logs to s3.
 ``` yml
 on:
   schedule:
-    # daily@04:19am
-    - cron: "19 4 * * *"
+    # mondays@04:19am
+    - cron: "19 4 * * 1"
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - uses: chiefbiiko/permalogs3@v0.1.0
+      - uses: chiefbiiko/permalogs3@v0.1.1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
